@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stormcast Eternals – Story Mode Generator</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:16px;background:#fff;}
+    .wrap{max-width:980px;margin:0 auto;border:1px solid #ddd;border-radius:12px;padding:16px;}
+    .row{display:flex;flex-wrap:wrap;gap:12px;}
+    .card{border:1px solid #e6e6e6;border-radius:12px;padding:12px;background:#fafafa;flex:1;min-width:260px;}
+    .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
+    button{padding:10px 12px;border-radius:10px;border:1px solid #ccc;background:#f3f3f3;font-weight:800;cursor:pointer}
+    button.primary{background:#1976d2;border-color:#1976d2;color:#fff}
+    button.danger{background:#fff;border-color:#d32f2f;color:#d32f2f}
+    pre{white-space:pre-wrap;margin:0;padding:12px;background:#f7f7f7;border-radius:10px;min-height:160px;border:1px solid #e6e6e6}
+    h3{margin:0 0 6px 0}
+    p{margin:6px 0 0 0;color:#444}
+    .kv{margin:0;font-size:14px;line-height:1.4}
+    .kv b{display:inline-block;min-width:110px}
+    .muted{color:#666;font-size:13px}
+    .tiny{font-size:12px;color:#777;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="storymode-stormcast">
+    <h3>Stormcast Eternals – Story Mode Generator</h3>
+    <p class="muted">Saves your current general in your browser. Use <b>Reset</b> if you want a fresh start.</p>
+
+    <div class="row" style="margin-top:12px;">
+      <div class="card">
+        <h3 style="font-size:16px;margin:0 0 8px 0;">Current Character</h3>
+        <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
+        <p class="kv"><b>Faction:</b> <span id="cur-faction">Stormcast Eternals (Spearhead)</span></p>
+        <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
+        <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
+        <p class="kv"><b>Complication:</b> <span id="cur-comp">—</span></p>
+        <p class="tiny" id="cur-tailor">—</p>
+
+        <div class="btns" style="margin-bottom:0;">
+          <button type="button" id="btn-reset" class="danger">Reset Character</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:16px;margin:0 0 8px 0;">Actions</h3>
+        <div class="btns" style="margin-top:0;">
+          <button class="primary" type="button" id="btn-all">Generate Full Starter</button>
+          <button type="button" id="btn-general">Roll General</button>
+          <button type="button" id="btn-episode">Roll Episode</button>
+          <button type="button" id="btn-interlude">Roll Interlude</button>
+          <button type="button" id="btn-copy">Copy Result</button>
+        </div>
+        <p class="muted">Tip: roll a General once, then use Episode + Interlude repeatedly between games.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <pre id="out"></pre>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    // -------------------------
+    // Helpers + persistence
+    // -------------------------
+    const STORAGE_KEY = "woehammer_storymode_stormcast_v1";
+
+    const roll = (sides) => Math.floor(Math.random() * sides) + 1;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const loadState = () => {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch { return {}; }
+    };
+    const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    let state = loadState();
+
+    // -------------------------
+    // Tables
+    // -------------------------
+    const realms = ["Aqshy (Fire)","Ghyran (Life)","Shyish (Death)","Ghur (Beasts)","Chamon (Metal)","Ulgu (Shadow)"];
+    const factionName = "Stormcast Eternals (Spearhead)";
+
+    // Names: deliberately “Stormcast-y” but still pronounceable
+    const generalNames = [
+      "Lord-Celestant Aster Valorn",
+      "Lord-Relictor Thane Corvannis",
+      "Knight-Incantor Lyra Dawnshield",
+      "Knight-Questor Garran Steelward",
+      "Lord-Imperatant Kaelis Stormvein",
+      "Knight-Vexillor Merek Goldsign",
+      "Lord-Veritant Siora Truthbrand",
+      "Knight-Arcanum Odrin Halostep",
+      "Lord-Castellant Brannic Ironlight",
+      "Knight-Judicator Eamon Skywrath",
+      "Lord-Aquilor Vexan Windstride",
+      "Lord-Exorcist Seraphine Ashward"
+    ];
+
+    // Backgrounds with keys (for tailoring)
+    const generalBackgrounds = [
+      { key: "reforged_veteran", label: "The Many-Times Reforged (Memories Fraying)" },
+      { key: "freshly_forged",   label: "Freshly Forged (New to Immortality)" },
+      { key: "redeemer",         label: "The Redeemer (Oath to Protect the Helpless)" },
+      { key: "slayer",           label: "The Slayer (Hunts a Specific Foe)" },
+      { key: "prophet",          label: "The Vision-Bound (Dreams and Portents)" },
+      { key: "penitent",         label: "The Penitent (Seeking Atonement)" },
+      { key: "commander",        label: "The Strict Commander (Discipline Above All)" },
+      { key: "relic_hunter",     label: "The Relic-Seeker (Quest for a Sacred Artefact)" },
+      { key: "doubt",            label: "The Doubter (Faith Tested by Reforging)" },
+      { key: "sigmarite",        label: "The Sigmarite Idealist (Unbreakable Conviction)" },
+      { key: "hunter",           label: "The Vanguard Stalker (War in the Wilds)" },
+      { key: "judge",            label: "The Celestial Judge (Purge Corruption, No Exceptions)" }
+    ];
+
+    const complications = [
+      "Memory loss after reforging",
+      "A rival Stormhost officer",
+      "A mortal settlement you swore to protect",
+      "A secret flaw others must not see",
+      "Orders that conflict with your conscience",
+      "A prophecy that won’t leave you alone"
+    ];
+
+    // Episodes (shared)
+    const episodeTypes = ["Incursion","Pursuit","Escalation","Revelation"];
+
+    const incursion = [
+      "Night Raid: The attack comes without warning, torches and steel flashing in the dark. By the time you muster, the raiders are already moving on — unless you stop them.",
+      "Border Breach: A boundary thought secure has been crossed. If this breach holds, control of the region shifts — and you’re expected to respond.",
+      "Sabotage Strike: Fires burn where supplies once stood. The enemy isn’t here to beat you — they’re here to cripple you and vanish.",
+      "Probing Attack: They advance cautiously, committing just enough to draw you out. Someone is learning how you fight.",
+      "Sudden Landing: Boats beach to the south (or worse). You’re forced into a rapid march to intercept before the foothold becomes a beachhead.",
+      "Hidden Objective: The incursion makes little sense at first. Only later do you realise what was taken, destroyed, or uncovered during the fighting."
+    ];
+
+    const pursuit = [
+      "Running Down the Enemy: The foe withdraws in haste. Letting them escape will make the next battle worse.",
+      "Fighting Retreat: Rearguards strike hard, then fall back, buying time with blood. Every delay favours the enemy.",
+      "Desperate Escape: Something has gone badly wrong for the foe. Cornered prey can be more lethal than confident warriors.",
+      "Drawn Into a Trap: The chase feels too easy. The enemy funnels you onto ground of their choosing — and turning back becomes impossible.",
+      "Forced March: Orders demand immediate pursuit regardless of exhaustion. You’ll fight as soon as you make contact.",
+      "Relentless Hunt: This has become personal. One side refuses to stop until the other is broken."
+    ];
+
+    const escalation = [
+      "Reinforcements Arrive: Fresh enemy forces enter the region — better led or simply more numerous. Subtlety dies.",
+      "Open Warfare: Fortifications rise, supply lines are struck openly, and neutrality becomes impossible. Everyone now knows there is a war on.",
+      "Brutal Retaliation: Your actions provoke a disproportionate response. The enemy strikes harder and faster, mercy withdrawn.",
+      "Widening Conflict: What began locally spreads outward. Allies, rivals, and opportunists are drawn in with their own agendas.",
+      "Lines Are Drawn: Positions harden and every engagement carries long-term consequences. This will not end quietly.",
+      "Point of No Return: A decisive act ensures the conflict cannot be de-escalated. Whatever happens next will define the campaign."
+    ];
+
+    const revelation = [
+      "The Real Enemy: You learn the forces you’ve faced are being directed by something else — and it may now know you’ve seen the pattern.",
+      "The Wrong Target: You realise you struck the wrong place or foe. Someone else benefited from your actions.",
+      "The Price of Victory: What you secured is cursed, compromised, or bait. Victory counts — but it carries consequences.",
+      "A Betrayal Revealed: An ally or neutral party is exposed. Their involvement explains the enemy’s uncanny precision.",
+      "Ancient Truth: This conflict is older than you knew. You are not starting a war — you are continuing one.",
+      "Prophecy Fulfilled: Signs align in a way that cannot be ignored. Whether by design or accident, you’ve played your part."
+    ];
+
+    // Interludes: base + tailored additions
+    const interludesBase = [
+      "Command: A messenger from Azyr arrives with orders that don’t match what you’re seeing on the ground.",
+      "Camp & Troops: Mortals look to you as a myth made real — and expect miracles on demand.",
+      "The World Beyond: Refugees arrive, bringing fear, rumours, and problems you can’t smite away.",
+      "The Enemy: You find evidence the foe is learning your patterns — and countering them.",
+      "The Past: A memory returns that shouldn’t exist… a life you lived before reforging.",
+      "The Omen: Lightning hangs in clear skies. The storm feels… watchful."
+    ];
+
+    const interludesByBackground = {
+      reforged_veteran: [
+        "Reforging: You forget a name you once swore never to forget — and it rattles you more than any blade.",
+        "Echo: You see a face in the crowd that died centuries ago… and it looks back.",
+        "Fracture: A comrade notices you repeating a ritual you can’t explain."
+      ],
+      freshly_forged: [
+        "Unfamiliar: The weight of immortality settles in. You realise you may outlive everyone you save.",
+        "Overreach: You try to live up to legend and nearly break your force doing it.",
+        "First Scar: Your first true failure hits harder than any wound."
+      ],
+      redeemer: [
+        "Protection: A settlement begs for shelter. Keeping that promise may cost you the campaign’s momentum.",
+        "Mercy: Prisoners are taken. Your decision will define how your allies see you.",
+        "Aftermath: You find the cost of war written on innocent faces."
+      ],
+      slayer: [
+        "Mark: You receive a sign that your quarry is close — and it makes you reckless.",
+        "Bait: The enemy leaves a trail too obvious… and you want it to be real.",
+        "Obsession: Allies worry your hunt is swallowing the mission."
+      ],
+      judge: [
+        "Purge: Corruption is found among allies. Dealing with it will fracture trust.",
+        "No Exceptions: A guilty party is useful alive. You must choose justice or advantage.",
+        "Fear: People begin to fear you almost as much as the enemy."
+      ],
+      prophet: [
+        "Vision: You dream the next battlefield before you see it — and wake with ash in your mouth.",
+        "Interpretation: Two priests argue over what Sigmar ‘meant’. Both demand you act.",
+        "Omen: A sign appears and the mortals treat you like its author."
+      ]
+    };
+
+    const tailoredOneLiners = {
+      reforged_veteran: "Because you’re many-times reforged, the war isn’t just against the enemy — it’s against what you’re losing.",
+      freshly_forged: "Because you’re newly forged, every battle is a lesson written in lightning and blood.",
+      redeemer: "Because you’re a redeemer, victory means nothing if the innocent pay the price.",
+      slayer: "Because you’re a slayer, the hunt never really ends — it just changes target.",
+      judge: "Because you’re a judge, corruption is the true foe… even when it wears a friendly face.",
+      prophet: "Because you’re vision-bound, your certainty frightens people almost as much as your doubt."
+    };
+
+    // Threat
+    function threat2d6(){
+      const r = roll(6) + roll(6);
+      let pct = 0, note = "Equal";
+      if (r === 2) { pct = -25; note = "Enemy understrength"; }
+      else if (r === 3) { pct = -15; note = "Enemy understrength"; }
+      else if (r === 4) { pct = -10; note = "Enemy understrength"; }
+      else if (r === 5 || r === 6) { pct = 0; note = "Equal (enemy disadvantaged)"; }
+      else if (r === 7) { pct = 0; note = "Equal"; }
+      else if (r === 8 || r === 9) { pct = 0; note = "Equal (enemy advantaged)"; }
+      else if (r === 10) { pct = 10; note = "Enemy reinforced"; }
+      else if (r === 11) { pct = 15; note = "Enemy reinforced"; }
+      else if (r === 12) { pct = 25; note = "Enemy heavily reinforced"; }
+      return { r, pct, note };
+    }
+
+    // -------------------------
+    // Rollers
+    // -------------------------
+    function ensureRealm(){
+      if (!state.realm) {
+        state.realm = pick(realms);
+        saveState();
+      }
+      return state.realm;
+    }
+
+    function rollGeneral(){
+      const bg = pick(generalBackgrounds);
+      state.general = {
+        name: pick(generalNames),
+        backgroundKey: bg.key,
+        backgroundLabel: bg.label,
+        complication: pick(complications)
+      };
+      saveState();
+      return state.general;
+    }
+
+    function rollEpisode(){
+      const type = pick(episodeTypes);
+      let detail = "";
+      if (type === "Incursion") detail = pick(incursion);
+      if (type === "Pursuit") detail = pick(pursuit);
+      if (type === "Escalation") detail = pick(escalation);
+      if (type === "Revelation") detail = pick(revelation);
+      return { type, detail };
+    }
+
+    function rollInterlude(){
+      const key = state.general?.backgroundKey;
+      const tailored = (key && interludesByBackground[key]) ? interludesByBackground[key] : [];
+      const pool = [...interludesBase, ...interludesBase, ...tailored];
+      const result = pick(pool);
+      const extra = (key && tailoredOneLiners[key]) ? `\n${tailoredOneLiners[key]}` : "";
+      return result + extra;
+    }
+
+    function generateAll(){
+      const realm = ensureRealm();
+      const gen = state.general || rollGeneral();
+      const ep  = rollEpisode();
+      const th  = threat2d6();
+      const threatTxt = `${th.r} (2D6) → ${th.note}${th.pct === 0 ? "" : `, ${th.pct > 0 ? "+" : ""}${th.pct}% enemy points`}`;
+
+      return [
+        `Realm: ${realm}`,
+        `Faction: ${factionName}`,
+        `General: ${gen.name}`,
+        `Background: ${gen.backgroundLabel}`,
+        `Complication: ${gen.complication}`,
+        ``,
+        `Episode: ${ep.type}`,
+        `${ep.detail}`,
+        ``,
+        `Threat Level: ${threatTxt}`
+      ].join("\n");
+    }
+
+    function resetCharacter(){
+      state = {};
+      localStorage.removeItem(STORAGE_KEY);
+      renderCurrent();
+      out.textContent = "Character reset. Click Generate Full Starter to begin.";
+    }
+
+    // -------------------------
+    // UI
+    // -------------------------
+    const out = document.getElementById("out");
+
+    function renderCurrent(){
+      const realm = state.realm || "—";
+      const gen = state.general || null;
+
+      document.getElementById("cur-realm").textContent = realm;
+      document.getElementById("cur-general").textContent = gen ? gen.name : "—";
+      document.getElementById("cur-bg").textContent = gen ? gen.backgroundLabel : "—";
+      document.getElementById("cur-comp").textContent = gen ? gen.complication : "—";
+
+      const key = gen?.backgroundKey;
+      document.getElementById("cur-tailor").textContent =
+        key && tailoredOneLiners[key] ? tailoredOneLiners[key] : "Tip: roll a general to unlock tailored interludes.";
+    }
+
+    // Bind buttons
+    document.getElementById("btn-all").addEventListener("click", () => {
+      out.textContent = generateAll();
+      renderCurrent();
+    });
+
+    document.getElementById("btn-general").addEventListener("click", () => {
+      ensureRealm();
+      const g = rollGeneral();
+      out.textContent = `Realm: ${state.realm}\nFaction: ${factionName}\n\nGeneral: ${g.name}\nBackground: ${g.backgroundLabel}\nComplication: ${g.complication}`;
+      renderCurrent();
+    });
+
+    document.getElementById("btn-episode").addEventListener("click", () => {
+      ensureRealm();
+      const e = rollEpisode();
+      const t = threat2d6();
+      out.textContent =
+        `Realm: ${state.realm}\nFaction: ${factionName}\n` +
+        (state.general ? `General: ${state.general.name} (${state.general.backgroundLabel})\n\n` : "\n") +
+        `Episode: ${e.type}\n${e.detail}\n\nThreat Level: ${t.r} (2D6) → ${t.note}${t.pct === 0 ? "" : `, ${t.pct > 0 ? "+" : ""}${t.pct}% enemy points`}`;
+      renderCurrent();
+    });
+
+    document.getElementById("btn-interlude").addEventListener("click", () => {
+      ensureRealm();
+      out.textContent =
+        `Realm: ${state.realm}\nFaction: ${factionName}\n` +
+        (state.general ? `General: ${state.general.name} (${state.general.backgroundLabel})\n\n` : "\n") +
+        `Interlude: ${rollInterlude()}`;
+      renderCurrent();
+    });
+
+    document.getElementById("btn-copy").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(out.textContent || ""); alert("Copied!"); }
+      catch(e){ alert("Copy failed (browser blocked it). Select the text and copy manually."); }
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", resetCharacter);
+
+    // Initial render
+    renderCurrent();
+    if (!out.textContent) out.textContent = "Ready. Click Generate Full Starter.";
+  })();
+  </script>
+</body>
+</html>
