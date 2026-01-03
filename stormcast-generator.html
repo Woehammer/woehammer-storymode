@@ -57,9 +57,15 @@
       color:#d32f2f
     }
 
-    /* ✅ Output now looks like story text, not a terminal */
-    pre{
-      white-space:pre-wrap;
+    h3{margin:0 0 6px 0}
+    p{margin:6px 0 0 0;color:#444}
+    .kv{margin:0;font-size:14px;line-height:1.4}
+    .kv b{display:inline-block;min-width:110px}
+    .muted{color:#777;font-size:12px}
+    .tiny{font-size:12px;color:#777;margin-top:6px}
+
+    /* ✅ Output card (now supports bold labels + section dividers) */
+    .output{
       margin:0;
       padding:16px;
       background:#ffffff;
@@ -67,17 +73,66 @@
       min-height:220px;
       border:1px solid #ddd;
       font-family: inherit;
-      line-height: 1.5;
+      line-height:1.55;
+    }
+    .output p{ margin:0 0 10px 0; }
+    .output strong{ font-weight:700; }
+
+    /* ✅ Section dividers inside output */
+    .section{
+      margin:14px 0 10px 0;
+      padding-top:12px;
+      border-top:1px solid #e9e9e9;
+    }
+    .section-title{
+      margin:0 0 8px 0;
+      font-size:13px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:#666;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .chip{
+      display:inline-block;
+      padding:2px 8px;
+      border:1px solid #e1e1e1;
+      background:#f7f7f7;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      color:#555;
     }
 
-    h3{margin:0 0 6px 0}
-    p{margin:6px 0 0 0;color:#444}
-    .kv{margin:0;font-size:14px;line-height:1.4}
-    .kv b{display:inline-block;min-width:110px}
-
-    /* ✅ Tip text quieter */
-    .muted{color:#777;font-size:12px}
-    .tiny{font-size:12px;color:#777;margin-top:6px}
+    /* ✅ “Campaign Log” header styling */
+    .log-header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:12px 0 6px 0;
+    }
+    .log-icon{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid #e1e1e1;
+      background:#f7f7f7;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+    }
+    .log-title{
+      margin:0;
+      font-size:16px;
+    }
+    .log-sub{
+      margin:0;
+      font-size:12px;
+      color:#777;
+    }
   </style>
 </head>
 <body>
@@ -113,11 +168,18 @@
       </div>
     </div>
 
-    <!-- ✅ Small header adds “delivered” feel -->
-    <h3 style="font-size:15px;margin:12px 0 6px 0;">Campaign Log</h3>
-    <pre id="out"></pre>
+    <!-- ✅ Campaign Log header with icon + subtitle -->
+    <div class="log-header">
+      <div class="log-icon">📜</div>
+      <div>
+        <h3 class="log-title">Campaign Log</h3>
+        <p class="log-sub">Your generated hook, episode, and between-battle beats.</p>
+      </div>
+    </div>
 
-    <!-- ✅ Clear ending so it doesn’t crash into your footer -->
+    <!-- ✅ Output container supports bold labels + HTML -->
+    <div id="out" class="output"></div>
+
     <hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;">
     <p style="text-align:center;font-size:13px;color:#666;margin:0;">
       Story Mode is an optional narrative aide. Use it as much — or as little — as you like.
@@ -129,10 +191,17 @@
     // -------------------------
     // Helpers + persistence
     // -------------------------
-    const STORAGE_KEY = "woehammer_storymode_stormcast_v1";
+    const STORAGE_KEY = "woehammer_storymode_stormcast_v2";
 
     const roll = (sides) => Math.floor(Math.random() * sides) + 1;
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const escapeHtml = (s) => String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+
     const loadState = () => {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
       catch { return {}; }
@@ -290,6 +359,9 @@
       return { r, pct, note };
     }
 
+    // -------------------------
+    // Rollers
+    // -------------------------
     function ensureRealm(){
       if (!state.realm) {
         state.realm = pick(realms);
@@ -325,38 +397,107 @@
       const tailored = (key && interludesByBackground[key]) ? interludesByBackground[key] : [];
       const pool = [...interludesBase, ...interludesBase, ...tailored];
       const result = pick(pool);
-      const extra = (key && tailoredOneLiners[key]) ? `\n${tailoredOneLiners[key]}` : "";
-      return result + extra;
+      const extra = (key && tailoredOneLiners[key]) ? ` ${tailoredOneLiners[key]}` : "";
+      return escapeHtml(result) + (extra ? `<br><span class="muted">${escapeHtml(extra)}</span>` : "");
     }
 
-    function generateAll(){
+    // -------------------------
+    // HTML builders (output formatting)
+    // -------------------------
+    function headerBlock(realm){
+      return `
+        <p><strong>Realm:</strong> ${escapeHtml(realm)}</p>
+        <p><strong>Faction:</strong> ${escapeHtml(factionName)}</p>
+      `;
+    }
+
+    function generalBlock(gen){
+      if (!gen) return `<p class="muted">No general yet. Click <strong>Roll General</strong> to create one.</p>`;
+      return `
+        <p><strong>General:</strong> ${escapeHtml(gen.name)}</p>
+        <p><strong>Background:</strong> ${escapeHtml(gen.backgroundLabel)}</p>
+        <p><strong>Complication:</strong> ${escapeHtml(gen.complication)}</p>
+      `;
+    }
+
+    function section(title, rightChip, innerHtml){
+      const chip = rightChip ? `<span class="chip">${escapeHtml(rightChip)}</span>` : "";
+      return `
+        <div class="section">
+          <div class="section-title">${escapeHtml(title)} ${chip}</div>
+          ${innerHtml}
+        </div>
+      `;
+    }
+
+    function generateAllHtml(){
       const realm = ensureRealm();
       const gen = state.general || rollGeneral();
       const ep  = rollEpisode();
       const th  = threat2d6();
       const threatTxt = `${th.r} (2D6) → ${th.note}${th.pct === 0 ? "" : `, ${th.pct > 0 ? "+" : ""}${th.pct}% enemy points`}`;
 
-      return [
-        `Realm: ${realm}`,
-        `Faction: ${factionName}`,
-        `General: ${gen.name}`,
-        `Background: ${gen.backgroundLabel}`,
-        `Complication: ${gen.complication}`,
-        ``,
-        `Episode: ${ep.type}`,
-        `${ep.detail}`,
-        ``,
-        `Threat Level: ${threatTxt}`
-      ].join("\n");
+      const episodeHtml = `
+        <p><strong>Hook:</strong> ${escapeHtml(ep.detail)}</p>
+      `;
+
+      const threatHtml = `
+        <p><strong>Threat Level:</strong> ${escapeHtml(threatTxt)}</p>
+      `;
+
+      return `
+        ${headerBlock(realm)}
+        ${generalBlock(gen)}
+        ${section("Episode", ep.type, episodeHtml)}
+        ${section("Threat", "", threatHtml)}
+      `;
+    }
+
+    function episodeOnlyHtml(){
+      const realm = ensureRealm();
+      const gen = state.general || null;
+      const ep  = rollEpisode();
+      const th  = threat2d6();
+      const threatTxt = `${th.r} (2D6) → ${th.note}${th.pct === 0 ? "" : `, ${th.pct > 0 ? "+" : ""}${th.pct}% enemy points`}`;
+
+      return `
+        ${headerBlock(realm)}
+        ${generalBlock(gen)}
+        ${section("Episode", ep.type, `<p><strong>Hook:</strong> ${escapeHtml(ep.detail)}</p>`)}
+        ${section("Threat", "", `<p><strong>Threat Level:</strong> ${escapeHtml(threatTxt)}</p>`)}
+      `;
+    }
+
+    function interludeOnlyHtml(){
+      const realm = ensureRealm();
+      const gen = state.general || null;
+      return `
+        ${headerBlock(realm)}
+        ${generalBlock(gen)}
+        ${section("Interlude", "", `<p>${rollInterlude()}</p>`)}
+      `;
+    }
+
+    function generalOnlyHtml(){
+      const realm = ensureRealm();
+      const g = rollGeneral();
+      return `
+        ${headerBlock(realm)}
+        ${generalBlock(g)}
+        ${section("Next", "", `<p class="muted">Now roll an <strong>Episode</strong> for your next battle, then an <strong>Interlude</strong> afterwards.</p>`)}
+      `;
     }
 
     function resetCharacter(){
       state = {};
       localStorage.removeItem(STORAGE_KEY);
       renderCurrent();
-      out.textContent = "Character reset. Click Generate Full Starter to begin.";
+      out.innerHTML = `<p class="muted">Character reset. Click <strong>Generate Full Starter</strong> to begin.</p>`;
     }
 
+    // -------------------------
+    // UI
+    // -------------------------
     const out = document.getElementById("out");
 
     function renderCurrent(){
@@ -374,46 +515,40 @@
     }
 
     document.getElementById("btn-all").addEventListener("click", () => {
-      out.textContent = generateAll();
+      out.innerHTML = generateAllHtml();
       renderCurrent();
     });
 
     document.getElementById("btn-general").addEventListener("click", () => {
-      ensureRealm();
-      const g = rollGeneral();
-      out.textContent = `Realm: ${state.realm}\nFaction: ${factionName}\n\nGeneral: ${g.name}\nBackground: ${g.backgroundLabel}\nComplication: ${g.complication}`;
+      out.innerHTML = generalOnlyHtml();
       renderCurrent();
     });
 
     document.getElementById("btn-episode").addEventListener("click", () => {
-      ensureRealm();
-      const e = rollEpisode();
-      const t = threat2d6();
-      out.textContent =
-        `Realm: ${state.realm}\nFaction: ${factionName}\n` +
-        (state.general ? `General: ${state.general.name} (${state.general.backgroundLabel})\n\n` : "\n") +
-        `Episode: ${e.type}\n${e.detail}\n\nThreat Level: ${t.r} (2D6) → ${t.note}${t.pct === 0 ? "" : `, ${t.pct > 0 ? "+" : ""}${t.pct}% enemy points`}`;
+      out.innerHTML = episodeOnlyHtml();
       renderCurrent();
     });
 
     document.getElementById("btn-interlude").addEventListener("click", () => {
-      ensureRealm();
-      out.textContent =
-        `Realm: ${state.realm}\nFaction: ${factionName}\n` +
-        (state.general ? `General: ${state.general.name} (${state.general.backgroundLabel})\n\n` : "\n") +
-        `Interlude: ${rollInterlude()}`;
+      out.innerHTML = interludeOnlyHtml();
       renderCurrent();
     });
 
     document.getElementById("btn-copy").addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText(out.textContent || ""); alert("Copied!"); }
-      catch(e){ alert("Copy failed (browser blocked it). Select the text and copy manually."); }
+      try {
+        // Copy as plain text (strip HTML)
+        const text = out.innerText || "";
+        await navigator.clipboard.writeText(text);
+        alert("Copied!");
+      } catch(e){
+        alert("Copy failed (browser blocked it). Select the text and copy manually.");
+      }
     });
 
     document.getElementById("btn-reset").addEventListener("click", resetCharacter);
 
     renderCurrent();
-    if (!out.textContent) out.textContent = "Ready. Click Generate Full Starter.";
+    if (!out.innerText.trim()) out.innerHTML = `<p class="muted">Ready. Click <strong>Generate Full Starter</strong>.</p>`;
   })();
   </script>
 </body>
