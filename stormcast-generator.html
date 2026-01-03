@@ -5,20 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stormcast Eternals – Story Mode Generator</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:16px;background:#fff;}
-    .wrap{max-width:980px;margin:0 auto;border:1px solid #ddd;border-radius:12px;padding:16px;}
-    .row{display:flex;flex-wrap:wrap;gap:12px;}
-    .card{border:1px solid #e6e6e6;border-radius:12px;padding:12px;background:#fafafa;flex:1;min-width:260px;}
-    .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
-    button{padding:10px 12px;border-radius:10px;border:1px solid #ccc;background:#f3f3f3;font-weight:800;cursor:pointer}
-    button.primary{background:#1976d2;border-color:#1976d2;color:#fff}
-    button.danger{background:#fff;border-color:#d32f2f;color:#d32f2f}
-    pre{white-space:pre-wrap;margin:0;padding:12px;background:#f7f7f7;border-radius:10px;min-height:160px;border:1px solid #e6e6e6}
+    body{
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      margin:0;
+      padding:16px;
+      background:#fff;
+    }
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      border:1px solid #ddd;
+      border-radius:12px;
+      padding:16px;
+      background:#fff;
+    }
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+    .card{
+      border:1px solid #e6e6e6;
+      border-radius:12px;
+      padding:12px;
+      background:#fafafa;
+      flex:1;
+      min-width:260px;
+    }
+    .btns{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin:12px 0;
+    }
+    button{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      background:#f3f3f3;
+      font-weight:800;
+      cursor:pointer
+    }
+    button.primary{
+      background:#1976d2;
+      border-color:#1976d2;
+      color:#fff
+    }
+    button.danger{
+      background:#fff;
+      border-color:#d32f2f;
+      color:#d32f2f
+    }
+
+    /* ✅ Output now looks like story text, not a terminal */
+    pre{
+      white-space:pre-wrap;
+      margin:0;
+      padding:16px;
+      background:#ffffff;
+      border-radius:12px;
+      min-height:220px;
+      border:1px solid #ddd;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+
     h3{margin:0 0 6px 0}
     p{margin:6px 0 0 0;color:#444}
     .kv{margin:0;font-size:14px;line-height:1.4}
     .kv b{display:inline-block;min-width:110px}
-    .muted{color:#666;font-size:13px}
+
+    /* ✅ Tip text quieter */
+    .muted{color:#777;font-size:12px}
     .tiny{font-size:12px;color:#777;margin-top:6px}
   </style>
 </head>
@@ -35,7 +93,7 @@
         <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
         <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
         <p class="kv"><b>Complication:</b> <span id="cur-comp">—</span></p>
-        <p class="tiny" id="cur-tailor">—</p>
+        <p class="tiny" id="cur-tailor">Tip: roll a general to unlock tailored interludes.</p>
 
         <div class="btns" style="margin-bottom:0;">
           <button type="button" id="btn-reset" class="danger">Reset Character</button>
@@ -51,13 +109,19 @@
           <button type="button" id="btn-interlude">Roll Interlude</button>
           <button type="button" id="btn-copy">Copy Result</button>
         </div>
-        <p class="muted">Tip: roll a General once, then use Episode + Interlude repeatedly between games.</p>
+        <p class="muted">Tip: roll a General once, then use Episode + Interlude between games.</p>
       </div>
     </div>
 
-    <div style="margin-top:12px;">
-      <pre id="out"></pre>
-    </div>
+    <!-- ✅ Small header adds “delivered” feel -->
+    <h3 style="font-size:15px;margin:12px 0 6px 0;">Campaign Log</h3>
+    <pre id="out"></pre>
+
+    <!-- ✅ Clear ending so it doesn’t crash into your footer -->
+    <hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;">
+    <p style="text-align:center;font-size:13px;color:#666;margin:0;">
+      Story Mode is an optional narrative aide. Use it as much — or as little — as you like.
+    </p>
   </div>
 
   <script>
@@ -83,7 +147,6 @@
     const realms = ["Aqshy (Fire)","Ghyran (Life)","Shyish (Death)","Ghur (Beasts)","Chamon (Metal)","Ulgu (Shadow)"];
     const factionName = "Stormcast Eternals (Spearhead)";
 
-    // Names: deliberately “Stormcast-y” but still pronounceable
     const generalNames = [
       "Lord-Celestant Aster Valorn",
       "Lord-Relictor Thane Corvannis",
@@ -99,7 +162,6 @@
       "Lord-Exorcist Seraphine Ashward"
     ];
 
-    // Backgrounds with keys (for tailoring)
     const generalBackgrounds = [
       { key: "reforged_veteran", label: "The Many-Times Reforged (Memories Fraying)" },
       { key: "freshly_forged",   label: "Freshly Forged (New to Immortality)" },
@@ -124,7 +186,6 @@
       "A prophecy that won’t leave you alone"
     ];
 
-    // Episodes (shared)
     const episodeTypes = ["Incursion","Pursuit","Escalation","Revelation"];
 
     const incursion = [
@@ -163,7 +224,6 @@
       "Prophecy Fulfilled: Signs align in a way that cannot be ignored. Whether by design or accident, you’ve played your part."
     ];
 
-    // Interludes: base + tailored additions
     const interludesBase = [
       "Command: A messenger from Azyr arrives with orders that don’t match what you’re seeing on the ground.",
       "Camp & Troops: Mortals look to you as a myth made real — and expect miracles on demand.",
@@ -215,7 +275,6 @@
       prophet: "Because you’re vision-bound, your certainty frightens people almost as much as your doubt."
     };
 
-    // Threat
     function threat2d6(){
       const r = roll(6) + roll(6);
       let pct = 0, note = "Equal";
@@ -231,9 +290,6 @@
       return { r, pct, note };
     }
 
-    // -------------------------
-    // Rollers
-    // -------------------------
     function ensureRealm(){
       if (!state.realm) {
         state.realm = pick(realms);
@@ -301,9 +357,6 @@
       out.textContent = "Character reset. Click Generate Full Starter to begin.";
     }
 
-    // -------------------------
-    // UI
-    // -------------------------
     const out = document.getElementById("out");
 
     function renderCurrent(){
@@ -320,7 +373,6 @@
         key && tailoredOneLiners[key] ? tailoredOneLiners[key] : "Tip: roll a general to unlock tailored interludes.";
     }
 
-    // Bind buttons
     document.getElementById("btn-all").addEventListener("click", () => {
       out.textContent = generateAll();
       renderCurrent();
@@ -360,7 +412,6 @@
 
     document.getElementById("btn-reset").addEventListener("click", resetCharacter);
 
-    // Initial render
     renderCurrent();
     if (!out.textContent) out.textContent = "Ready. Click Generate Full Starter.";
   })();
