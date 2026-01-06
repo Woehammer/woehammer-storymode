@@ -14,6 +14,10 @@
     button{padding:10px 12px;border-radius:10px;border:1px solid #ccc;background:#f3f3f3;font-weight:800;cursor:pointer}
     button.primary{background:#1976d2;border-color:#1976d2;color:#fff}
     button.danger{background:#fff;border-color:#d32f2f;color:#d32f2f}
+    button.good{background:#2e7d32;border-color:#2e7d32;color:#fff}
+    button.warn{background:#f9a825;border-color:#f9a825;color:#111}
+    button.bad{background:#c62828;border-color:#c62828;color:#fff}
+
     h3{margin:0 0 6px 0}
     .muted{color:#777;font-size:12px}
     .kv{margin:0;font-size:14px;line-height:1.4}
@@ -31,9 +35,36 @@
 
     .help{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;border:1px solid #d0d0d0;background:#f7f7f7;color:#555;font-weight:900;font-size:12px;line-height:1;cursor:help;position:relative;user-select:none;flex:0 0 auto}
     .help:focus{outline:2px solid #1976d2;outline-offset:2px}
-    .help .tip{display:none;position:absolute;z-index:50;left:50%;transform:translateX(-50%);top:24px;width:min(320px,80vw);background:#111;color:#fff;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+    .help .tip{display:none;position:absolute;z-index:50;left:50%;transform:translateX(-50%);top:24px;width:min(340px,80vw);background:#111;color:#fff;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.2)}
     .help .tip::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);border-width:0 6px 6px 6px;border-style:solid;border-color:transparent transparent #111 transparent}
     .help:hover .tip,.help:focus .tip{display:block}
+
+    /* Campaign entries */
+    .logbox{
+      border:1px solid #ddd;
+      border-radius:12px;
+      background:#fff;
+      padding:12px;
+      margin-top:10px;
+    }
+    .entry{
+      border-top:1px solid #eee;
+      padding-top:10px;
+      margin-top:10px;
+    }
+    .entry:first-child{border-top:none;margin-top:0;padding-top:0}
+    .entry-title{font-weight:900;margin:0 0 6px 0}
+    .entry-meta{margin:0 0 6px 0}
+    .pill{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #ddd;
+      background:#f7f7f7;
+      font-size:12px;
+      font-weight:800;
+      margin-left:6px;
+    }
   </style>
 </head>
 
@@ -49,7 +80,6 @@
       <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
       <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
       <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
-
       <p class="kv">
         <b>Mission:</b> <span id="cur-mission">—</span>
         <span class="help" tabindex="0" aria-label="What is Mission?">?
@@ -72,6 +102,21 @@
         <button id="btn-interlude" type="button">Roll Interlude</button>
         <button id="btn-copy" type="button">Copy</button>
       </div>
+
+      <div class="section" style="border-top:none;padding-top:0;margin-top:6px;">
+        <div class="section-title">
+          Post-Battle Result
+          <span class="help" tabindex="0" aria-label="Help">?
+            <span class="tip">After you play the game, pick Win/Draw/Loss to generate an After Action report and save Battle # to the Campaign Log.</span>
+          </span>
+        </div>
+        <div class="btns" style="margin-top:8px;">
+          <button id="btn-win" class="good" type="button">Win</button>
+          <button id="btn-draw" class="warn" type="button">Draw</button>
+          <button id="btn-loss" class="bad" type="button">Loss</button>
+        </div>
+      </div>
+
       <p class="muted">Roll Mission once, then reroll Battle Hook as many times as you like for different blurbs.</p>
     </div>
   </div>
@@ -85,11 +130,27 @@
     <p class="muted">Ready. Click <strong>Generate Full Starter</strong>.</p>
   </div>
 
+  <div class="logbox">
+    <div class="section-title" style="margin-bottom:10px;">
+      Battle History
+      <span class="help" tabindex="0" aria-label="Help">?
+        <span class="tip">This log is stored in your browser. Copy it into your notes/Discord if you want to keep it permanently.</span>
+      </span>
+    </div>
+
+    <div class="btns" style="margin-top:0;">
+      <button id="btn-copy-log" type="button">Copy Log</button>
+      <button id="btn-clear-log" class="danger" type="button">Clear Log</button>
+    </div>
+
+    <div id="log"></div>
+  </div>
+
 </div>
 
 <script>
 (function(){
-  const STORAGE = "woehammer_stormcast_story_v7";
+  const STORAGE = "woehammer_stormcast_story_v8";
   const pick = a => a[Math.floor(Math.random()*a.length)];
   const roll = n => Math.floor(Math.random()*n)+1;
 
@@ -97,8 +158,11 @@
   try { state = JSON.parse(localStorage.getItem(STORAGE) || "{}"); }
   catch { state = {}; }
 
+  // Ensure log array exists
+  if(!Array.isArray(state.log)) state.log = [];
+
   const save = () => localStorage.setItem(STORAGE, JSON.stringify(state));
-  const clear = () => localStorage.removeItem(STORAGE);
+  const clearAll = () => localStorage.removeItem(STORAGE);
 
   const realms = ["Aqshy","Ghyran","Shyish","Ghur","Chamon","Ulgu"];
 
@@ -116,35 +180,26 @@
 
   const missionTypes = ["Incursion","Pursuit","Escalation","Revelation"];
 
-  // Multiple blurbs PER mission type (add more anytime)
   const battleHooks = {
     Incursion:[
       "A sudden assault strikes an area you previously thought secure. You must muster quickly, march your force, and drive the attackers back before they slip away with whatever they came for.",
       "Raiders appear from hidden routes at dusk, striking supply wagons and outposts. If you don’t respond immediately, your campaign will starve before it truly begins.",
-      "Enemy scouts and light troops push into your territory, testing your response. Break them now or they’ll map every weakness you have.",
-      "A night attack hits your outer pickets. The alarm goes up too late to prevent damage — but not too late for vengeance. You must push the enemy from your doorstep.",
-      "A false signal draws your patrols away, then the real blow falls. The enemy wants something specific. You can’t let them leave with it."
+      "Enemy scouts and light troops push into your territory, testing your response. Break them now or they’ll map every weakness you have."
     ],
     Pursuit:[
       "The enemy is falling back, wounded but dangerous. You can let them escape and regroup… or you can chase them down and finish the fight on your terms.",
       "A rearguard buys time with brutal efficiency. Every mile you gain costs blood — but if you relent, the enemy will be gone by morning.",
-      "You catch glimpses of fleeing banners through smoke and rain. If you can force a battle before they reach safety, you might end this quickly.",
-      "Tracks and broken standards mark the route of retreat. Your scouts insist the enemy is close. Push hard now, or the trail goes cold.",
-      "Your strike broke their line — but not their will. The enemy runs toward cover. If you can cut them off, you can turn a victory into a rout."
+      "You catch glimpses of fleeing banners through smoke and rain. If you can force a battle before they reach safety, you might end this quickly."
     ],
     Escalation:[
       "The conflict widens and restraint dies. Reinforcements arrive, strongpoints are seized, and the war becomes impossible to ignore. This battle will shape the next phase of the campaign.",
       "Positions harden into front lines. Both sides commit fully — supplies, morale, and reputations are on the line, and neutrality is no longer an option.",
-      "What began as skirmishes becomes open warfare. Strike hard now, or you’ll be fighting a stronger enemy later.",
-      "The enemy has fortified a key position overnight. If you don’t break it now, the campaign will stall and your allies will lose faith.",
-      "Rumours spread through nearby settlements: this war is here to stay. A decisive battle is needed — something that convinces everyone who holds the ground."
+      "What began as skirmishes becomes open warfare. Strike hard now, or you’ll be fighting a stronger enemy later."
     ],
     Revelation:[
       "Victory uncovers something you weren’t meant to find — a truth, a relic, or a betrayal. Now you must fight not just to win, but to control who learns what.",
       "Evidence suggests the enemy was never acting alone. Your next battle isn’t just against soldiers — it’s against the hidden hand guiding them.",
-      "A pattern becomes undeniable. The war is part of something older and darker than you knew, and this engagement may decide what comes next.",
-      "A captured foe speaks a name you recognise — but you don’t know why. The battle ahead may reveal what reforging has stolen from you.",
-      "You find signs of a ritual site, abandoned in haste. The enemy is racing to finish what they started. You must stop them before the truth becomes catastrophe."
+      "A pattern becomes undeniable. The war is part of something older and darker than you knew, and this engagement may decide what comes next."
     ]
   };
 
@@ -162,6 +217,66 @@
     prophet:["A dream leaves you certain of the next battlefield… and afraid of it."]
   };
 
+  // After Action blurbs by mission type + result
+  const afterAction = {
+    Incursion:{
+      win:[
+        "The raiders are driven off and their prize recovered. Survivors scatter, but not before you learn they were guided here by purpose — not chance.",
+        "Your counter-attack hits like a hammer. The enemy slips away, but you hold the ground and the locals speak your name with renewed hope."
+      ],
+      draw:[
+        "The enemy withdraws with part of what they wanted. You’ve stabilised the line, but the cost was higher than you expected — and questions remain.",
+        "You blunt the attack, yet the foe escapes cleanly. It feels less like a win and more like a warning."
+      ],
+      loss:[
+        "The enemy strikes, takes what they came for, and leaves you with smoke and wounded. Whatever they wanted, they wanted it badly — and they got it.",
+        "Your force is forced back. The area is no longer secure, and the next battle will be fought on worse terms."
+      ]
+    },
+    Pursuit:{
+      win:[
+        "You run them down. A retreat becomes a rout, and the enemy’s confidence breaks. The road ahead looks suddenly shorter.",
+        "Your vanguard catches their rearguard and crushes it. The survivors flee without order — and you choose the next battleground."
+      ],
+      draw:[
+        "You press them hard, but they slip away at the last. You’ve hurt them — not enough to end it — but enough to make them cautious.",
+        "A messy fight in bad ground. Neither side claims a clean victory, but you deny them the safety they wanted."
+      ],
+      loss:[
+        "You overextend. The enemy turns and bites, leaving you bloodied and stalled while they escape the net.",
+        "The pursuit becomes a trap. You fall back, angry and regrouping, as the enemy regains momentum."
+      ]
+    },
+    Escalation:{
+      win:[
+        "A decisive blow. Allies rally and neutrals reconsider — the war has a new shape, and you helped carve it.",
+        "Your victory hardens into control: roads, bridges, and morale. The campaign shifts in your favour."
+      ],
+      draw:[
+        "The battlefield is contested and costly. The war widens, but neither side gains the clear upper hand — yet.",
+        "You hold, but you don’t break them. The front line forms here, and the next fights will be bigger."
+      ],
+      loss:[
+        "Your position collapses under pressure. The enemy claims ground and initiative, and rumours spread of your setback.",
+        "The war escalates… and you’re the one forced to react. Reinforcements will be needed — and quickly."
+      ]
+    },
+    Revelation:{
+      win:[
+        "You win — and the truth is yours to wield. The enemy fought hard to keep it hidden, which tells you everything you need to know.",
+        "The battle is won, but the discovery changes everything. The next step is no longer ‘victory’ — it’s ‘containment’."
+      ],
+      draw:[
+        "You gain fragments, not certainty. Enough to worry you, not enough to act cleanly. The truth sits like grit under armour.",
+        "The enemy retreats before answers are secured. You sense you were inches from something important."
+      ],
+      loss:[
+        "The enemy escapes with secrets intact — or worse, with proof of something you didn’t want to be real.",
+        "You’re forced to withdraw before the truth can be seized. The cost of ignorance will be paid later."
+      ]
+    }
+  };
+
   function ensureRealm(){
     if(!state.realm){ state.realm = pick(realms); save(); }
   }
@@ -177,16 +292,14 @@
   }
 
   function rollMission(){
-    const t = pick(missionTypes);
-    state.missionType = t;
+    state.missionType = pick(missionTypes);
     save();
-    return t;
+    return state.missionType;
   }
 
-  // Roll a blurb for the CURRENT mission type (does not change mission type)
-  function rollBattleHookForCurrentMission(){
+  function rollBattleHook(){
     const t = state.missionType || rollMission();
-    const hook = pick(battleHooks[t] || ["(No hooks defined yet for this mission type.)"]);
+    const hook = pick(battleHooks[t] || ["(No hooks defined yet.)"]);
     state.lastHook = { type: t, text: hook };
     save();
     return state.lastHook;
@@ -225,37 +338,101 @@
     `;
   }
 
-  function renderCurrent(){
-    document.getElementById("cur-realm").textContent = state.realm || "—";
-    document.getElementById("cur-general").textContent = state.general?.name || "—";
-    document.getElementById("cur-bg").textContent = state.general?.bgLabel || "—";
-    document.getElementById("cur-mission").textContent = state.missionType || "—";
-  }
-
-  const out = document.getElementById("out");
-
   function battleHookBlock(){
-    const hook = state.lastHook?.type === (state.missionType || "") ? state.lastHook : rollBattleHookForCurrentMission();
+    if(!state.lastHook || state.lastHook.type !== state.missionType) rollBattleHook();
     return section(
       "Battle Hook",
-      `<p><strong>${hook.type}:</strong> ${hook.text}</p>`,
+      `<p><strong>${state.lastHook.type}:</strong> ${state.lastHook.text}</p>`,
       "Reroll this to get a different blurb for the same Mission type."
     );
   }
 
-  document.getElementById("btn-all").onclick = () => {
+  function renderCurrent(){
+    document.getElementById("cur-realm").textContent = state.realm || "—";
+    document.getElementById("cur-general").textContent = state.general?.name || "—";
+    document.getElementById("cur-bg").textContent = state.general?.bgLabel || "—";
+  }
+
+  function renderLog(){
+    const logDiv = document.getElementById("log");
+    if(!state.log.length){
+      logDiv.innerHTML = `<p class="muted">No battles logged yet. Play a game, then click Win/Draw/Loss.</p>`;
+      return;
+    }
+
+    logDiv.innerHTML = state.log.slice().reverse().map(entry => {
+      const pill = entry.result === "Win" ? "good" : entry.result === "Draw" ? "warn" : "bad";
+      return `
+        <div class="entry">
+          <p class="entry-title">Battle ${entry.number} <span class="pill">${entry.result}</span></p>
+          <p class="entry-meta"><strong>Mission:</strong> ${entry.mission}</p>
+          <p class="entry-meta"><strong>Hook:</strong> ${entry.hook}</p>
+          <p class="entry-meta"><strong>After Action:</strong> ${entry.after}</p>
+        </div>
+      `;
+    }).join("");
+  }
+
+  const out = document.getElementById("out");
+
+  function ensureReadyForBattle(){
     ensureRealm();
     if(!state.general) rollGeneral();
     if(!state.missionType) rollMission();
-    rollBattleHookForCurrentMission();
+    if(!state.lastHook || state.lastHook.type !== state.missionType) rollBattleHook();
+    save();
+  }
 
+  function showCurrentPack(){
     out.innerHTML =
       header() +
       generalBlock() +
       battleHookBlock() +
       section("Threat", `<p>${threat()}</p>`, "Use this to slightly adjust points if you want. Ignore it if you don’t.");
+  }
 
+  function logResult(result){
+    ensureReadyForBattle();
+
+    const mission = state.missionType;
+    const hook = state.lastHook?.text || "(No hook)";
+    const pool = afterAction[mission]?.[result.toLowerCase()] || ["After action report unavailable."];
+    const after = pick(pool);
+
+    const nextNumber = state.log.length + 1;
+
+    state.log.push({
+      number: nextNumber,
+      mission,
+      hook,
+      result,
+      after,
+      ts: Date.now()
+    });
+
+    // Clear hook so the next battle feels like a new “chapter”
+    state.lastHook = null;
+    // Keep mission type (optional). If you want a new mission every time, uncomment:
+    // state.missionType = null;
+
+    save();
+
+    out.innerHTML =
+      header() +
+      generalBlock() +
+      section("After Action", `<p><strong>${result}:</strong> ${after}</p>`) +
+      section("Logged", `<p>Saved as <strong>Battle ${nextNumber}</strong> in your Battle History.</p>`);
+
+    renderLog();
     renderCurrent();
+  }
+
+  // Buttons
+  document.getElementById("btn-all").onclick = () => {
+    ensureReadyForBattle();
+    showCurrentPack();
+    renderCurrent();
+    renderLog();
   };
 
   document.getElementById("btn-general").onclick = () => {
@@ -263,22 +440,27 @@
     rollGeneral();
     out.innerHTML = header() + generalBlock();
     renderCurrent();
+    renderLog();
   };
 
   document.getElementById("btn-mission").onclick = () => {
     ensureRealm();
-    rollMission();           // changes mission type
-    rollBattleHookForCurrentMission(); // auto-roll first hook for that mission
+    if(!state.general) rollGeneral();
+    rollMission();
+    rollBattleHook();
     out.innerHTML = header() + generalBlock() + battleHookBlock();
     renderCurrent();
+    renderLog();
   };
 
   document.getElementById("btn-hook").onclick = () => {
     ensureRealm();
+    if(!state.general) rollGeneral();
     if(!state.missionType) rollMission();
-    rollBattleHookForCurrentMission(); // rerolls hook, mission stays same
+    rollBattleHook();
     out.innerHTML = header() + generalBlock() + battleHookBlock();
     renderCurrent();
+    renderLog();
   };
 
   document.getElementById("btn-interlude").onclick = () => {
@@ -293,13 +475,25 @@
         "A short between-battle beat. Use it as a scene, a paragraph of diary text, or a quick roleplay moment."
       );
     renderCurrent();
+    renderLog();
   };
 
+  document.getElementById("btn-win").onclick  = () => logResult("Win");
+  document.getElementById("btn-draw").onclick = () => logResult("Draw");
+  document.getElementById("btn-loss").onclick = () => logResult("Loss");
+
   document.getElementById("btn-reset").onclick = () => {
-    state = {};
-    clear();
-    renderCurrent();
-    out.innerHTML = `<p class="muted">Character reset. Click <strong>Generate Full Starter</strong> to begin.</p>`;
+    // Keep log? Usually no. So we wipe everything.
+    state = { log: [] };
+    clearAll();
+    // Restore empty state locally so UI updates
+    state = { log: [] };
+    out.innerHTML = `<p class="muted">Reset complete. Click <strong>Generate Full Starter</strong> to begin.</p>`;
+    document.getElementById("cur-realm").textContent = "—";
+    document.getElementById("cur-general").textContent = "—";
+    document.getElementById("cur-bg").textContent = "—";
+    document.getElementById("cur-mission").textContent = "—";
+    renderLog();
   };
 
   document.getElementById("btn-copy").onclick = async () => {
@@ -307,7 +501,26 @@
     catch(e){ alert("Copy failed. Select the text and copy manually."); }
   };
 
+  document.getElementById("btn-copy-log").onclick = async () => {
+    const lines = state.log.map(e =>
+      `Battle ${e.number} — ${e.result}\nMission: ${e.mission}\nHook: ${e.hook}\nAfter Action: ${e.after}\n`
+    ).join("\n");
+    try{ await navigator.clipboard.writeText(lines || ""); alert("Log copied"); }
+    catch(e){ alert("Copy failed. Select and copy manually."); }
+  };
+
+  document.getElementById("btn-clear-log").onclick = () => {
+    state.log = [];
+    save();
+    renderLog();
+    out.innerHTML = `<p class="muted">Log cleared.</p>`;
+  };
+
+  // Initial render
+  document.getElementById("cur-mission").textContent = state.missionType || "—";
   renderCurrent();
+  renderLog();
+
 })();
 </script>
 </body>
