@@ -93,7 +93,7 @@
 </head>
 
 <body>
-<div class="wrap">
+<div class="wrap" id="storymode-stormcast">
 
   <h3>Stormcast Eternals – Story Mode Generator</h3>
   <p class="muted">Optional narrative aide. No rules impact. Saved locally in your browser.</p>
@@ -104,22 +104,23 @@
       <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
       <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
       <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
-      <p class="kv"><b>Complication:</b> <span id="cur-comp">—</span></p>
+      <p class="kv"><b>Purpose:</b> <span id="cur-purpose">—</span></p>
+
       <div class="btns">
-        <button id="btn-reset" class="danger">Reset Character</button>
+        <button id="btn-reset" class="danger" type="button">Reset Character</button>
       </div>
     </div>
 
     <div class="card">
       <h3 style="font-size:16px;">Actions</h3>
       <div class="btns">
-        <button id="btn-all" class="primary">Generate Full Starter</button>
-        <button id="btn-general">Roll General</button>
-        <button id="btn-episode">Roll Episode</button>
-        <button id="btn-interlude">Roll Interlude</button>
-        <button id="btn-copy">Copy</button>
+        <button id="btn-all" class="primary" type="button">Generate Full Starter</button>
+        <button id="btn-general" type="button">Roll General</button>
+        <button id="btn-battle" type="button">Roll Battle Hook</button>
+        <button id="btn-interlude" type="button">Roll Interlude</button>
+        <button id="btn-copy" type="button">Copy</button>
       </div>
-      <p class="muted">Roll a General once, then Episodes + Interludes between games.</p>
+      <p class="muted">Roll a General once, then Battle Hooks + Interludes between games.</p>
     </div>
   </div>
 
@@ -136,190 +137,217 @@
 
 <script>
 (function(){
+  const STORAGE = "woehammer_stormcast_story_v4";
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  const roll = n => Math.floor(Math.random()*n)+1;
 
-const STORAGE = "woehammer_stormcast_story_v3";
-const pick = a => a[Math.floor(Math.random()*a.length)];
-const roll = n => Math.floor(Math.random()*n)+1;
+  // Load state
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(STORAGE) || "{}"); }
+  catch { state = {}; }
 
-let state = JSON.parse(localStorage.getItem(STORAGE) || "{}");
-const save = () => localStorage.setItem(STORAGE, JSON.stringify(state));
+  const save = () => localStorage.setItem(STORAGE, JSON.stringify(state));
+  const clear = () => localStorage.removeItem(STORAGE);
 
-/* DATA */
+  // Tables
+  const realms = ["Aqshy","Ghyran","Shyish","Ghur","Chamon","Ulgu"];
 
-const realms = ["Aqshy","Ghyran","Shyish","Ghur","Chamon","Ulgu"];
-
-const firstNames = [
-  "Aster","Lyra","Kaelis","Brannic","Seraphine","Garran",
-  "Odrin","Merek","Siora","Eamon","Vexan","Thane"
-];
-
-const lastNames = [
-  "Valorn","Dawnward","Stormvein","Goldsign","Halospear",
-  "Ironlight","Truthbrand","Ashward","Skywrath",
-  "Steelward","Windstride","Brightfall"
-];
-
-const backgrounds = [
-  {k:"reforged",l:"Many-Times Reforged (Memories Fraying)"},
-  {k:"new",l:"Freshly Forged (New to Immortality)"},
-  {k:"redeemer",l:"Redeemer (Oath to Protect the Helpless)"},
-  {k:"slayer",l:"Slayer (Hunts a Specific Foe)"},
-  {k:"prophet",l:"Vision-Bound (Dreams and Portents)"},
-  {k:"judge",l:"Celestial Judge (No Mercy for Corruption)"}
-];
-
-const complications = [
-  "Memory loss after reforging",
-  "A rival within the Stormhost",
-  "A settlement sworn under protection",
-  "Orders that conflict with conscience",
-  "A prophecy that will not fade",
-  "A flaw others must not see"
-];
-
-const episodeTypes = ["Incursion","Pursuit","Escalation","Revelation"];
-
-const episodes = {
-  Incursion:[
-    "A sudden assault strikes an area thought secure. The enemy withdraws before full strength can be brought to bear.",
-    "A probing attack tests defences and resolve. Someone is watching closely.",
-    "Enemy forces land unexpectedly, forcing a rapid response."
-  ],
-  Pursuit:[
-    "The enemy retreats in haste. Letting them escape will cost you later.",
-    "Rear-guards fight viciously, buying time with blood."
-  ],
-  Escalation:[
-    "The conflict widens. Reinforcements arrive and restraint vanishes.",
-    "What began quietly is now open war."
-  ],
-  Revelation:[
-    "You learn the enemy was never acting alone.",
-    "Victory uncovers a truth you wish you had not found."
-  ]
-};
-
-const interludes = {
-  base:[
-    "Mortals look to you as a myth made real — and expect miracles.",
-    "Orders from Azyr conflict with reality on the ground.",
-    "A memory surfaces that should not exist."
-  ],
-  reforged:[
-    "You forget a name that once mattered more than victory."
-  ],
-  new:[
-    "Immortality settles in — heavier than expected."
-  ],
-  redeemer:[
-    "Protecting the innocent may cost momentum."
-  ],
-  slayer:[
-    "Signs suggest your quarry is close — and you feel reckless."
-  ],
-  judge:[
-    "Corruption is found among allies. Justice will fracture trust."
-  ]
-};
-
-/* FUNCTIONS */
-
-function ensureRealm(){
-  if(!state.realm){ state.realm = pick(realms); save(); }
-}
-
-function rollGeneral(){
-  const bg = pick(backgrounds);
-  state.general = {
-    name: `${pick(firstNames)} ${pick(lastNames)}`,
-    bgKey: bg.k,
-    bgLabel: bg.l,
-    comp: pick(complications)
-  };
-  save();
-}
-
-function threat(){
-  const r = roll(6)+roll(6);
-  if(r<=3) return "Enemy weakened (-15–25%)";
-  if(r<=6) return "Enemy slightly weakened";
-  if(r<=9) return "Even forces";
-  if(r<=11) return "Enemy reinforced (+10–15%)";
-  return "Enemy heavily reinforced (+25%)";
-}
-
-/* OUTPUT BUILDERS */
-
-function header(){
-  return `<p><strong>Realm:</strong> ${state.realm}</p>`;
-}
-
-function generalBlock(){
-  if(!state.general) return `<p class="muted">No general yet.</p>`;
-  return `
-    <p><strong>General:</strong> ${state.general.name}</p>
-    <p><strong>Background:</strong> ${state.general.bgLabel}</p>
-    <p><strong>Complication:</strong> ${state.general.comp}</p>
-  `;
-}
-
-function section(title, body){
-  return `
-    <div class="section">
-      <div class="section-title">${title}</div>
-      ${body}
-    </div>
-  `;
-}
-
-/* BUTTONS */
-
-const out = document.getElementById("out");
-
-document.getElementById("btn-all").onclick = () => {
-  ensureRealm();
-  if(!state.general) rollGeneral();
-  const type = pick(episodeTypes);
-  out.innerHTML =
-    header() +
-    generalBlock() +
-    section("Episode", `<p><strong>${type}:</strong> ${pick(episodes[type])}</p>`) +
-    section("Threat", `<p>${threat()}</p>`);
-};
-
-document.getElementById("btn-general").onclick = () => {
-  ensureRealm(); rollGeneral();
-  out.innerHTML = header()+generalBlock();
-};
-
-document.getElementById("btn-episode").onclick = () => {
-  ensureRealm();
-  const type = pick(episodeTypes);
-  out.innerHTML =
-    header()+generalBlock()+
-    section("Episode", `<p><strong>${type}:</strong> ${pick(episodes[type])}</p>`);
-};
-
-document.getElementById("btn-interlude").onclick = () => {
-  ensureRealm();
-  const pool = [
-    ...interludes.base,
-    ...(interludes[state.general?.bgKey]||[])
+  const firstNames = [
+    "Aster","Lyra","Kaelis","Brannic","Seraphine","Garran",
+    "Odrin","Merek","Siora","Eamon","Vexan","Thane"
   ];
-  out.innerHTML =
-    header()+generalBlock()+
-    section("Interlude", `<p>${pick(pool)}</p>`);
-};
+  const lastNames = [
+    "Valorn","Dawnward","Stormvein","Goldsign","Halospear",
+    "Ironlight","Truthbrand","Ashward","Skywrath",
+    "Steelward","Windstride","Brightfall"
+  ];
 
-document.getElementById("btn-reset").onclick = () => {
-  state={}; save();
-  out.innerHTML = `<p class="muted">Character reset.</p>`;
-};
+  const backgrounds = [
+    {k:"reforged",l:"Many-Times Reforged (Memories Fraying)"},
+    {k:"new",l:"Freshly Forged (New to Immortality)"},
+    {k:"redeemer",l:"Redeemer (Oath to Protect the Helpless)"},
+    {k:"slayer",l:"Slayer (Hunts a Specific Foe)"},
+    {k:"prophet",l:"Vision-Bound (Dreams and Portents)"},
+    {k:"judge",l:"Celestial Judge (No Mercy for Corruption)"}
+  ];
 
-document.getElementById("btn-copy").onclick = async () => {
-  await navigator.clipboard.writeText(out.innerText);
-  alert("Copied");
-};
+  // Renamed from "complications" -> "purposes" (player-facing)
+  const purposes = [
+    "Protect a vulnerable settlement",
+    "Recover a sacred relic before the enemy does",
+    "Hunt down a particular foe",
+    "Hold the line until reinforcements arrive",
+    "Break the enemy’s supply route",
+    "Answer a prophecy or omen you cannot ignore"
+  ];
+
+  // Still uses episodeTypes internally, but user sees "Battle Hook"
+  const episodeTypes = ["Incursion","Pursuit","Escalation","Revelation"];
+  const battleHooks = {
+    Incursion:[
+      "A sudden assault strikes an area thought secure. The enemy withdraws before full strength can be brought to bear.",
+      "A probing attack tests defences and resolve. Someone is watching closely.",
+      "Enemy forces arrive unexpectedly, forcing a rapid response."
+    ],
+    Pursuit:[
+      "The enemy retreats in haste. Letting them escape will cost you later.",
+      "Rear-guards fight viciously, buying time with blood."
+    ],
+    Escalation:[
+      "The conflict widens. Reinforcements arrive and restraint vanishes.",
+      "What began quietly is now open war."
+    ],
+    Revelation:[
+      "You learn the enemy was never acting alone.",
+      "Victory uncovers a truth you wish you had not found."
+    ]
+  };
+
+  const interludes = {
+    base:[
+      "Mortals look to you as a myth made real — and expect miracles.",
+      "Orders from Azyr conflict with reality on the ground.",
+      "A memory surfaces that should not exist."
+    ],
+    reforged:[
+      "You forget a name that once mattered more than victory."
+    ],
+    new:[
+      "Immortality settles in — heavier than expected."
+    ],
+    redeemer:[
+      "A plea for protection arrives at the worst possible moment."
+    ],
+    slayer:[
+      "You glimpse a sign that your quarry is close — and it makes you reckless."
+    ],
+    judge:[
+      "Corruption is found among allies. Justice will fracture trust."
+    ],
+    prophet:[
+      "A dream leaves you certain of the next battlefield… and afraid of it."
+    ]
+  };
+
+  function ensureRealm(){
+    if(!state.realm){
+      state.realm = pick(realms);
+      save();
+    }
+  }
+
+  function rollGeneral(){
+    const bg = pick(backgrounds);
+    state.general = {
+      name: `${pick(firstNames)} ${pick(lastNames)}`,
+      bgKey: bg.k,
+      bgLabel: bg.l,
+      purpose: pick(purposes)
+    };
+    save();
+  }
+
+  function threat(){
+    const r = roll(6)+roll(6);
+    if(r<=3) return "Enemy weakened (-15–25%)";
+    if(r<=6) return "Enemy slightly weakened";
+    if(r<=9) return "Even forces";
+    if(r<=11) return "Enemy reinforced (+10–15%)";
+    return "Enemy heavily reinforced (+25%)";
+  }
+
+  function section(title, body){
+    return `
+      <div class="section">
+        <div class="section-title">${title}</div>
+        ${body}
+      </div>
+    `;
+  }
+
+  function header(){
+    return `<p><strong>Realm:</strong> ${state.realm}</p>`;
+  }
+
+  function generalBlock(){
+    if(!state.general) return `<p class="muted">No general yet. Click <strong>Roll General</strong>.</p>`;
+    return `
+      <p><strong>General:</strong> ${state.general.name}</p>
+      <p><strong>Background:</strong> ${state.general.bgLabel}</p>
+      <p><strong>Purpose:</strong> ${state.general.purpose}</p>
+    `;
+  }
+
+  function renderCurrent(){
+    document.getElementById("cur-realm").textContent = state.realm || "—";
+    document.getElementById("cur-general").textContent = state.general?.name || "—";
+    document.getElementById("cur-bg").textContent = state.general?.bgLabel || "—";
+    document.getElementById("cur-purpose").textContent = state.general?.purpose || "—";
+  }
+
+  const out = document.getElementById("out");
+
+  // Buttons
+  document.getElementById("btn-all").onclick = () => {
+    ensureRealm();
+    if(!state.general) rollGeneral();
+
+    const type = pick(episodeTypes);
+    out.innerHTML =
+      header() +
+      generalBlock() +
+      section("Battle Hook", `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`) +
+      section("Threat", `<p>${threat()}</p>`);
+
+    renderCurrent();
+  };
+
+  document.getElementById("btn-general").onclick = () => {
+    ensureRealm();
+    rollGeneral();
+    out.innerHTML = header() + generalBlock();
+    renderCurrent();
+  };
+
+  document.getElementById("btn-battle").onclick = () => {
+    ensureRealm();
+    const type = pick(episodeTypes);
+    out.innerHTML =
+      header() + generalBlock() +
+      section("Battle Hook", `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`);
+    renderCurrent();
+  };
+
+  document.getElementById("btn-interlude").onclick = () => {
+    ensureRealm();
+    const pool = [
+      ...interludes.base,
+      ...(interludes[state.general?.bgKey] || [])
+    ];
+    out.innerHTML =
+      header() + generalBlock() +
+      section("Interlude", `<p>${pick(pool)}</p>`);
+    renderCurrent();
+  };
+
+  document.getElementById("btn-reset").onclick = () => {
+    state = {};
+    clear();
+    renderCurrent();
+    out.innerHTML = `<p class="muted">Character reset. Click <strong>Generate Full Starter</strong> to begin.</p>`;
+  };
+
+  document.getElementById("btn-copy").onclick = async () => {
+    try{
+      await navigator.clipboard.writeText(out.innerText || "");
+      alert("Copied");
+    }catch(e){
+      alert("Copy failed. Select the text and copy manually.");
+    }
+  };
+
+  // Initial render from saved state
+  renderCurrent();
 
 })();
 </script>
