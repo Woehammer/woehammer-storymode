@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stormcast Eternals – Story Mode Generator</title>
+
   <style>
     body{
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
@@ -19,11 +20,7 @@
       padding:16px;
       background:#fff;
     }
-    .row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-    }
+    .row{display:flex;flex-wrap:wrap;gap:12px}
     .card{
       border:1px solid #e6e6e6;
       border-radius:12px;
@@ -32,12 +29,7 @@
       flex:1;
       min-width:260px;
     }
-    .btns{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin:12px 0;
-    }
+    .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
     button{
       padding:10px 12px;
       border-radius:10px;
@@ -46,67 +38,43 @@
       font-weight:800;
       cursor:pointer
     }
-    button.primary{
-      background:#1976d2;
-      border-color:#1976d2;
-      color:#fff
-    }
-    button.danger{
-      background:#fff;
-      border-color:#d32f2f;
-      color:#d32f2f
-    }
+    button.primary{background:#1976d2;border-color:#1976d2;color:#fff}
+    button.danger{background:#fff;border-color:#d32f2f;color:#d32f2f}
 
     h3{margin:0 0 6px 0}
-    p{margin:6px 0 0 0;color:#444}
+    .muted{color:#777;font-size:12px}
     .kv{margin:0;font-size:14px;line-height:1.4}
     .kv b{display:inline-block;min-width:110px}
-    .muted{color:#777;font-size:12px}
-    .tiny{font-size:12px;color:#777;margin-top:6px}
 
-    /* ✅ Output card (now supports bold labels + section dividers) */
+    /* Output */
     .output{
       margin:0;
       padding:16px;
-      background:#ffffff;
+      background:#fff;
       border-radius:12px;
       min-height:220px;
       border:1px solid #ddd;
-      font-family: inherit;
       line-height:1.55;
     }
-    .output p{ margin:0 0 10px 0; }
-    .output strong{ font-weight:700; }
+    .output p{margin:0 0 10px 0}
+    .output strong{font-weight:700}
 
-    /* ✅ Section dividers inside output */
+    /* Sections */
     .section{
       margin:14px 0 10px 0;
       padding-top:12px;
       border-top:1px solid #e9e9e9;
     }
     .section-title{
-      margin:0 0 8px 0;
       font-size:13px;
       letter-spacing:.06em;
       text-transform:uppercase;
       color:#666;
       font-weight:800;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .chip{
-      display:inline-block;
-      padding:2px 8px;
-      border:1px solid #e1e1e1;
-      background:#f7f7f7;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:800;
-      color:#555;
+      margin-bottom:6px;
     }
 
-    /* ✅ “Campaign Log” header styling */
+    /* Campaign log header */
     .log-header{
       display:flex;
       align-items:center;
@@ -114,442 +82,246 @@
       margin:12px 0 6px 0;
     }
     .log-icon{
-      width:34px;
-      height:34px;
+      width:34px;height:34px;
       border-radius:10px;
       border:1px solid #e1e1e1;
       background:#f7f7f7;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex;align-items:center;justify-content:center;
       font-size:18px;
-    }
-    .log-title{
-      margin:0;
-      font-size:16px;
-    }
-    .log-sub{
-      margin:0;
-      font-size:12px;
-      color:#777;
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap" id="storymode-stormcast">
-    <h3>Stormcast Eternals – Story Mode Generator</h3>
-    <p class="muted">Saves your current general in your browser. Use <b>Reset</b> if you want a fresh start.</p>
+<div class="wrap">
 
-    <div class="row" style="margin-top:12px;">
-      <div class="card">
-        <h3 style="font-size:16px;margin:0 0 8px 0;">Current Character</h3>
-        <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
-        <p class="kv"><b>Faction:</b> <span id="cur-faction">Stormcast Eternals (Spearhead)</span></p>
-        <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
-        <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
-        <p class="kv"><b>Complication:</b> <span id="cur-comp">—</span></p>
-        <p class="tiny" id="cur-tailor">Tip: roll a general to unlock tailored interludes.</p>
+  <h3>Stormcast Eternals – Story Mode Generator</h3>
+  <p class="muted">Optional narrative aide. No rules impact. Saved locally in your browser.</p>
 
-        <div class="btns" style="margin-bottom:0;">
-          <button type="button" id="btn-reset" class="danger">Reset Character</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 style="font-size:16px;margin:0 0 8px 0;">Actions</h3>
-        <div class="btns" style="margin-top:0;">
-          <button class="primary" type="button" id="btn-all">Generate Full Starter</button>
-          <button type="button" id="btn-general">Roll General</button>
-          <button type="button" id="btn-episode">Roll Episode</button>
-          <button type="button" id="btn-interlude">Roll Interlude</button>
-          <button type="button" id="btn-copy">Copy Result</button>
-        </div>
-        <p class="muted">Tip: roll a General once, then use Episode + Interlude between games.</p>
+  <div class="row" style="margin-top:12px;">
+    <div class="card">
+      <h3 style="font-size:16px;">Current Character</h3>
+      <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
+      <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
+      <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
+      <p class="kv"><b>Complication:</b> <span id="cur-comp">—</span></p>
+      <div class="btns">
+        <button id="btn-reset" class="danger">Reset Character</button>
       </div>
     </div>
 
-    <!-- ✅ Campaign Log header with icon + subtitle -->
-    <div class="log-header">
-      <div class="log-icon">📜</div>
-      <div>
-        <h3 class="log-title">Campaign Log</h3>
-        <p class="log-sub">Your generated hook, episode, and between-battle beats.</p>
+    <div class="card">
+      <h3 style="font-size:16px;">Actions</h3>
+      <div class="btns">
+        <button id="btn-all" class="primary">Generate Full Starter</button>
+        <button id="btn-general">Roll General</button>
+        <button id="btn-episode">Roll Episode</button>
+        <button id="btn-interlude">Roll Interlude</button>
+        <button id="btn-copy">Copy</button>
       </div>
+      <p class="muted">Roll a General once, then Episodes + Interludes between games.</p>
     </div>
-
-    <!-- ✅ Output container supports bold labels + HTML -->
-    <div id="out" class="output"></div>
-
-    <hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;">
-    <p style="text-align:center;font-size:13px;color:#666;margin:0;">
-      Story Mode is an optional narrative aide. Use it as much — or as little — as you like.
-    </p>
   </div>
 
-  <script>
-  (function(){
-    // -------------------------
-    // Helpers + persistence
-    // -------------------------
-    const STORAGE_KEY = "woehammer_storymode_stormcast_v2";
+  <div class="log-header">
+    <div class="log-icon">📜</div>
+    <h3>Campaign Log</h3>
+  </div>
 
-    const roll = (sides) => Math.floor(Math.random() * sides) + 1;
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const escapeHtml = (s) => String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+  <div id="out" class="output">
+    <p class="muted">Ready. Click <strong>Generate Full Starter</strong>.</p>
+  </div>
 
-    const loadState = () => {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
-      catch { return {}; }
-    };
-    const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+</div>
 
-    let state = loadState();
+<script>
+(function(){
 
-    // -------------------------
-    // Tables
-    // -------------------------
-    const realms = ["Aqshy (Fire)","Ghyran (Life)","Shyish (Death)","Ghur (Beasts)","Chamon (Metal)","Ulgu (Shadow)"];
-    const factionName = "Stormcast Eternals (Spearhead)";
+const STORAGE = "woehammer_stormcast_story_v3";
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const roll = n => Math.floor(Math.random()*n)+1;
 
-    const generalNames = [
-      "Lord-Celestant Aster Valorn",
-      "Lord-Relictor Thane Corvannis",
-      "Knight-Incantor Lyra Dawnshield",
-      "Knight-Questor Garran Steelward",
-      "Lord-Imperatant Kaelis Stormvein",
-      "Knight-Vexillor Merek Goldsign",
-      "Lord-Veritant Siora Truthbrand",
-      "Knight-Arcanum Odrin Halostep",
-      "Lord-Castellant Brannic Ironlight",
-      "Knight-Judicator Eamon Skywrath",
-      "Lord-Aquilor Vexan Windstride",
-      "Lord-Exorcist Seraphine Ashward"
-    ];
+let state = JSON.parse(localStorage.getItem(STORAGE) || "{}");
+const save = () => localStorage.setItem(STORAGE, JSON.stringify(state));
 
-    const generalBackgrounds = [
-      { key: "reforged_veteran", label: "The Many-Times Reforged (Memories Fraying)" },
-      { key: "freshly_forged",   label: "Freshly Forged (New to Immortality)" },
-      { key: "redeemer",         label: "The Redeemer (Oath to Protect the Helpless)" },
-      { key: "slayer",           label: "The Slayer (Hunts a Specific Foe)" },
-      { key: "prophet",          label: "The Vision-Bound (Dreams and Portents)" },
-      { key: "penitent",         label: "The Penitent (Seeking Atonement)" },
-      { key: "commander",        label: "The Strict Commander (Discipline Above All)" },
-      { key: "relic_hunter",     label: "The Relic-Seeker (Quest for a Sacred Artefact)" },
-      { key: "doubt",            label: "The Doubter (Faith Tested by Reforging)" },
-      { key: "sigmarite",        label: "The Sigmarite Idealist (Unbreakable Conviction)" },
-      { key: "hunter",           label: "The Vanguard Stalker (War in the Wilds)" },
-      { key: "judge",            label: "The Celestial Judge (Purge Corruption, No Exceptions)" }
-    ];
+/* DATA */
 
-    const complications = [
-      "Memory loss after reforging",
-      "A rival Stormhost officer",
-      "A mortal settlement you swore to protect",
-      "A secret flaw others must not see",
-      "Orders that conflict with your conscience",
-      "A prophecy that won’t leave you alone"
-    ];
+const realms = ["Aqshy","Ghyran","Shyish","Ghur","Chamon","Ulgu"];
 
-    const episodeTypes = ["Incursion","Pursuit","Escalation","Revelation"];
+const firstNames = [
+  "Aster","Lyra","Kaelis","Brannic","Seraphine","Garran",
+  "Odrin","Merek","Siora","Eamon","Vexan","Thane"
+];
 
-    const incursion = [
-      "Night Raid: The attack comes without warning, torches and steel flashing in the dark. By the time you muster, the raiders are already moving on — unless you stop them.",
-      "Border Breach: A boundary thought secure has been crossed. If this breach holds, control of the region shifts — and you’re expected to respond.",
-      "Sabotage Strike: Fires burn where supplies once stood. The enemy isn’t here to beat you — they’re here to cripple you and vanish.",
-      "Probing Attack: They advance cautiously, committing just enough to draw you out. Someone is learning how you fight.",
-      "Sudden Landing: Boats beach to the south (or worse). You’re forced into a rapid march to intercept before the foothold becomes a beachhead.",
-      "Hidden Objective: The incursion makes little sense at first. Only later do you realise what was taken, destroyed, or uncovered during the fighting."
-    ];
+const lastNames = [
+  "Valorn","Dawnward","Stormvein","Goldsign","Halospear",
+  "Ironlight","Truthbrand","Ashward","Skywrath",
+  "Steelward","Windstride","Brightfall"
+];
 
-    const pursuit = [
-      "Running Down the Enemy: The foe withdraws in haste. Letting them escape will make the next battle worse.",
-      "Fighting Retreat: Rearguards strike hard, then fall back, buying time with blood. Every delay favours the enemy.",
-      "Desperate Escape: Something has gone badly wrong for the foe. Cornered prey can be more lethal than confident warriors.",
-      "Drawn Into a Trap: The chase feels too easy. The enemy funnels you onto ground of their choosing — and turning back becomes impossible.",
-      "Forced March: Orders demand immediate pursuit regardless of exhaustion. You’ll fight as soon as you make contact.",
-      "Relentless Hunt: This has become personal. One side refuses to stop until the other is broken."
-    ];
+const backgrounds = [
+  {k:"reforged",l:"Many-Times Reforged (Memories Fraying)"},
+  {k:"new",l:"Freshly Forged (New to Immortality)"},
+  {k:"redeemer",l:"Redeemer (Oath to Protect the Helpless)"},
+  {k:"slayer",l:"Slayer (Hunts a Specific Foe)"},
+  {k:"prophet",l:"Vision-Bound (Dreams and Portents)"},
+  {k:"judge",l:"Celestial Judge (No Mercy for Corruption)"}
+];
 
-    const escalation = [
-      "Reinforcements Arrive: Fresh enemy forces enter the region — better led or simply more numerous. Subtlety dies.",
-      "Open Warfare: Fortifications rise, supply lines are struck openly, and neutrality becomes impossible. Everyone now knows there is a war on.",
-      "Brutal Retaliation: Your actions provoke a disproportionate response. The enemy strikes harder and faster, mercy withdrawn.",
-      "Widening Conflict: What began locally spreads outward. Allies, rivals, and opportunists are drawn in with their own agendas.",
-      "Lines Are Drawn: Positions harden and every engagement carries long-term consequences. This will not end quietly.",
-      "Point of No Return: A decisive act ensures the conflict cannot be de-escalated. Whatever happens next will define the campaign."
-    ];
+const complications = [
+  "Memory loss after reforging",
+  "A rival within the Stormhost",
+  "A settlement sworn under protection",
+  "Orders that conflict with conscience",
+  "A prophecy that will not fade",
+  "A flaw others must not see"
+];
 
-    const revelation = [
-      "The Real Enemy: You learn the forces you’ve faced are being directed by something else — and it may now know you’ve seen the pattern.",
-      "The Wrong Target: You realise you struck the wrong place or foe. Someone else benefited from your actions.",
-      "The Price of Victory: What you secured is cursed, compromised, or bait. Victory counts — but it carries consequences.",
-      "A Betrayal Revealed: An ally or neutral party is exposed. Their involvement explains the enemy’s uncanny precision.",
-      "Ancient Truth: This conflict is older than you knew. You are not starting a war — you are continuing one.",
-      "Prophecy Fulfilled: Signs align in a way that cannot be ignored. Whether by design or accident, you’ve played your part."
-    ];
+const episodeTypes = ["Incursion","Pursuit","Escalation","Revelation"];
 
-    const interludesBase = [
-      "Command: A messenger from Azyr arrives with orders that don’t match what you’re seeing on the ground.",
-      "Camp & Troops: Mortals look to you as a myth made real — and expect miracles on demand.",
-      "The World Beyond: Refugees arrive, bringing fear, rumours, and problems you can’t smite away.",
-      "The Enemy: You find evidence the foe is learning your patterns — and countering them.",
-      "The Past: A memory returns that shouldn’t exist… a life you lived before reforging.",
-      "The Omen: Lightning hangs in clear skies. The storm feels… watchful."
-    ];
+const episodes = {
+  Incursion:[
+    "A sudden assault strikes an area thought secure. The enemy withdraws before full strength can be brought to bear.",
+    "A probing attack tests defences and resolve. Someone is watching closely.",
+    "Enemy forces land unexpectedly, forcing a rapid response."
+  ],
+  Pursuit:[
+    "The enemy retreats in haste. Letting them escape will cost you later.",
+    "Rear-guards fight viciously, buying time with blood."
+  ],
+  Escalation:[
+    "The conflict widens. Reinforcements arrive and restraint vanishes.",
+    "What began quietly is now open war."
+  ],
+  Revelation:[
+    "You learn the enemy was never acting alone.",
+    "Victory uncovers a truth you wish you had not found."
+  ]
+};
 
-    const interludesByBackground = {
-      reforged_veteran: [
-        "Reforging: You forget a name you once swore never to forget — and it rattles you more than any blade.",
-        "Echo: You see a face in the crowd that died centuries ago… and it looks back.",
-        "Fracture: A comrade notices you repeating a ritual you can’t explain."
-      ],
-      freshly_forged: [
-        "Unfamiliar: The weight of immortality settles in. You realise you may outlive everyone you save.",
-        "Overreach: You try to live up to legend and nearly break your force doing it.",
-        "First Scar: Your first true failure hits harder than any wound."
-      ],
-      redeemer: [
-        "Protection: A settlement begs for shelter. Keeping that promise may cost you the campaign’s momentum.",
-        "Mercy: Prisoners are taken. Your decision will define how your allies see you.",
-        "Aftermath: You find the cost of war written on innocent faces."
-      ],
-      slayer: [
-        "Mark: You receive a sign that your quarry is close — and it makes you reckless.",
-        "Bait: The enemy leaves a trail too obvious… and you want it to be real.",
-        "Obsession: Allies worry your hunt is swallowing the mission."
-      ],
-      judge: [
-        "Purge: Corruption is found among allies. Dealing with it will fracture trust.",
-        "No Exceptions: A guilty party is useful alive. You must choose justice or advantage.",
-        "Fear: People begin to fear you almost as much as the enemy."
-      ],
-      prophet: [
-        "Vision: You dream the next battlefield before you see it — and wake with ash in your mouth.",
-        "Interpretation: Two priests argue over what Sigmar ‘meant’. Both demand you act.",
-        "Omen: A sign appears and the mortals treat you like its author."
-      ]
-    };
+const interludes = {
+  base:[
+    "Mortals look to you as a myth made real — and expect miracles.",
+    "Orders from Azyr conflict with reality on the ground.",
+    "A memory surfaces that should not exist."
+  ],
+  reforged:[
+    "You forget a name that once mattered more than victory."
+  ],
+  new:[
+    "Immortality settles in — heavier than expected."
+  ],
+  redeemer:[
+    "Protecting the innocent may cost momentum."
+  ],
+  slayer:[
+    "Signs suggest your quarry is close — and you feel reckless."
+  ],
+  judge:[
+    "Corruption is found among allies. Justice will fracture trust."
+  ]
+};
 
-    const tailoredOneLiners = {
-      reforged_veteran: "Because you’re many-times reforged, the war isn’t just against the enemy — it’s against what you’re losing.",
-      freshly_forged: "Because you’re newly forged, every battle is a lesson written in lightning and blood.",
-      redeemer: "Because you’re a redeemer, victory means nothing if the innocent pay the price.",
-      slayer: "Because you’re a slayer, the hunt never really ends — it just changes target.",
-      judge: "Because you’re a judge, corruption is the true foe… even when it wears a friendly face.",
-      prophet: "Because you’re vision-bound, your certainty frightens people almost as much as your doubt."
-    };
+/* FUNCTIONS */
 
-    function threat2d6(){
-      const r = roll(6) + roll(6);
-      let pct = 0, note = "Equal";
-      if (r === 2) { pct = -25; note = "Enemy understrength"; }
-      else if (r === 3) { pct = -15; note = "Enemy understrength"; }
-      else if (r === 4) { pct = -10; note = "Enemy understrength"; }
-      else if (r === 5 || r === 6) { pct = 0; note = "Equal (enemy disadvantaged)"; }
-      else if (r === 7) { pct = 0; note = "Equal"; }
-      else if (r === 8 || r === 9) { pct = 0; note = "Equal (enemy advantaged)"; }
-      else if (r === 10) { pct = 10; note = "Enemy reinforced"; }
-      else if (r === 11) { pct = 15; note = "Enemy reinforced"; }
-      else if (r === 12) { pct = 25; note = "Enemy heavily reinforced"; }
-      return { r, pct, note };
-    }
+function ensureRealm(){
+  if(!state.realm){ state.realm = pick(realms); save(); }
+}
 
-    // -------------------------
-    // Rollers
-    // -------------------------
-    function ensureRealm(){
-      if (!state.realm) {
-        state.realm = pick(realms);
-        saveState();
-      }
-      return state.realm;
-    }
+function rollGeneral(){
+  const bg = pick(backgrounds);
+  state.general = {
+    name: `${pick(firstNames)} ${pick(lastNames)}`,
+    bgKey: bg.k,
+    bgLabel: bg.l,
+    comp: pick(complications)
+  };
+  save();
+}
 
-    function rollGeneral(){
-      const bg = pick(generalBackgrounds);
-      state.general = {
-        name: pick(generalNames),
-        backgroundKey: bg.key,
-        backgroundLabel: bg.label,
-        complication: pick(complications)
-      };
-      saveState();
-      return state.general;
-    }
+function threat(){
+  const r = roll(6)+roll(6);
+  if(r<=3) return "Enemy weakened (-15–25%)";
+  if(r<=6) return "Enemy slightly weakened";
+  if(r<=9) return "Even forces";
+  if(r<=11) return "Enemy reinforced (+10–15%)";
+  return "Enemy heavily reinforced (+25%)";
+}
 
-    function rollEpisode(){
-      const type = pick(episodeTypes);
-      let detail = "";
-      if (type === "Incursion") detail = pick(incursion);
-      if (type === "Pursuit") detail = pick(pursuit);
-      if (type === "Escalation") detail = pick(escalation);
-      if (type === "Revelation") detail = pick(revelation);
-      return { type, detail };
-    }
+/* OUTPUT BUILDERS */
 
-    function rollInterlude(){
-      const key = state.general?.backgroundKey;
-      const tailored = (key && interludesByBackground[key]) ? interludesByBackground[key] : [];
-      const pool = [...interludesBase, ...interludesBase, ...tailored];
-      const result = pick(pool);
-      const extra = (key && tailoredOneLiners[key]) ? ` ${tailoredOneLiners[key]}` : "";
-      return escapeHtml(result) + (extra ? `<br><span class="muted">${escapeHtml(extra)}</span>` : "");
-    }
+function header(){
+  return `<p><strong>Realm:</strong> ${state.realm}</p>`;
+}
 
-    // -------------------------
-    // HTML builders (output formatting)
-    // -------------------------
-    function headerBlock(realm){
-      return `
-        <p><strong>Realm:</strong> ${escapeHtml(realm)}</p>
-        <p><strong>Faction:</strong> ${escapeHtml(factionName)}</p>
-      `;
-    }
+function generalBlock(){
+  if(!state.general) return `<p class="muted">No general yet.</p>`;
+  return `
+    <p><strong>General:</strong> ${state.general.name}</p>
+    <p><strong>Background:</strong> ${state.general.bgLabel}</p>
+    <p><strong>Complication:</strong> ${state.general.comp}</p>
+  `;
+}
 
-    function generalBlock(gen){
-      if (!gen) return `<p class="muted">No general yet. Click <strong>Roll General</strong> to create one.</p>`;
-      return `
-        <p><strong>General:</strong> ${escapeHtml(gen.name)}</p>
-        <p><strong>Background:</strong> ${escapeHtml(gen.backgroundLabel)}</p>
-        <p><strong>Complication:</strong> ${escapeHtml(gen.complication)}</p>
-      `;
-    }
+function section(title, body){
+  return `
+    <div class="section">
+      <div class="section-title">${title}</div>
+      ${body}
+    </div>
+  `;
+}
 
-    function section(title, rightChip, innerHtml){
-      const chip = rightChip ? `<span class="chip">${escapeHtml(rightChip)}</span>` : "";
-      return `
-        <div class="section">
-          <div class="section-title">${escapeHtml(title)} ${chip}</div>
-          ${innerHtml}
-        </div>
-      `;
-    }
+/* BUTTONS */
 
-    function generateAllHtml(){
-      const realm = ensureRealm();
-      const gen = state.general || rollGeneral();
-      const ep  = rollEpisode();
-      const th  = threat2d6();
-      const threatTxt = `${th.r} (2D6) → ${th.note}${th.pct === 0 ? "" : `, ${th.pct > 0 ? "+" : ""}${th.pct}% enemy points`}`;
+const out = document.getElementById("out");
 
-      const episodeHtml = `
-        <p><strong>Hook:</strong> ${escapeHtml(ep.detail)}</p>
-      `;
+document.getElementById("btn-all").onclick = () => {
+  ensureRealm();
+  if(!state.general) rollGeneral();
+  const type = pick(episodeTypes);
+  out.innerHTML =
+    header() +
+    generalBlock() +
+    section("Episode", `<p><strong>${type}:</strong> ${pick(episodes[type])}</p>`) +
+    section("Threat", `<p>${threat()}</p>`);
+};
 
-      const threatHtml = `
-        <p><strong>Threat Level:</strong> ${escapeHtml(threatTxt)}</p>
-      `;
+document.getElementById("btn-general").onclick = () => {
+  ensureRealm(); rollGeneral();
+  out.innerHTML = header()+generalBlock();
+};
 
-      return `
-        ${headerBlock(realm)}
-        ${generalBlock(gen)}
-        ${section("Episode", ep.type, episodeHtml)}
-        ${section("Threat", "", threatHtml)}
-      `;
-    }
+document.getElementById("btn-episode").onclick = () => {
+  ensureRealm();
+  const type = pick(episodeTypes);
+  out.innerHTML =
+    header()+generalBlock()+
+    section("Episode", `<p><strong>${type}:</strong> ${pick(episodes[type])}</p>`);
+};
 
-    function episodeOnlyHtml(){
-      const realm = ensureRealm();
-      const gen = state.general || null;
-      const ep  = rollEpisode();
-      const th  = threat2d6();
-      const threatTxt = `${th.r} (2D6) → ${th.note}${th.pct === 0 ? "" : `, ${th.pct > 0 ? "+" : ""}${th.pct}% enemy points`}`;
+document.getElementById("btn-interlude").onclick = () => {
+  ensureRealm();
+  const pool = [
+    ...interludes.base,
+    ...(interludes[state.general?.bgKey]||[])
+  ];
+  out.innerHTML =
+    header()+generalBlock()+
+    section("Interlude", `<p>${pick(pool)}</p>`);
+};
 
-      return `
-        ${headerBlock(realm)}
-        ${generalBlock(gen)}
-        ${section("Episode", ep.type, `<p><strong>Hook:</strong> ${escapeHtml(ep.detail)}</p>`)}
-        ${section("Threat", "", `<p><strong>Threat Level:</strong> ${escapeHtml(threatTxt)}</p>`)}
-      `;
-    }
+document.getElementById("btn-reset").onclick = () => {
+  state={}; save();
+  out.innerHTML = `<p class="muted">Character reset.</p>`;
+};
 
-    function interludeOnlyHtml(){
-      const realm = ensureRealm();
-      const gen = state.general || null;
-      return `
-        ${headerBlock(realm)}
-        ${generalBlock(gen)}
-        ${section("Interlude", "", `<p>${rollInterlude()}</p>`)}
-      `;
-    }
+document.getElementById("btn-copy").onclick = async () => {
+  await navigator.clipboard.writeText(out.innerText);
+  alert("Copied");
+};
 
-    function generalOnlyHtml(){
-      const realm = ensureRealm();
-      const g = rollGeneral();
-      return `
-        ${headerBlock(realm)}
-        ${generalBlock(g)}
-        ${section("Next", "", `<p class="muted">Now roll an <strong>Episode</strong> for your next battle, then an <strong>Interlude</strong> afterwards.</p>`)}
-      `;
-    }
-
-    function resetCharacter(){
-      state = {};
-      localStorage.removeItem(STORAGE_KEY);
-      renderCurrent();
-      out.innerHTML = `<p class="muted">Character reset. Click <strong>Generate Full Starter</strong> to begin.</p>`;
-    }
-
-    // -------------------------
-    // UI
-    // -------------------------
-    const out = document.getElementById("out");
-
-    function renderCurrent(){
-      const realm = state.realm || "—";
-      const gen = state.general || null;
-
-      document.getElementById("cur-realm").textContent = realm;
-      document.getElementById("cur-general").textContent = gen ? gen.name : "—";
-      document.getElementById("cur-bg").textContent = gen ? gen.backgroundLabel : "—";
-      document.getElementById("cur-comp").textContent = gen ? gen.complication : "—";
-
-      const key = gen?.backgroundKey;
-      document.getElementById("cur-tailor").textContent =
-        key && tailoredOneLiners[key] ? tailoredOneLiners[key] : "Tip: roll a general to unlock tailored interludes.";
-    }
-
-    document.getElementById("btn-all").addEventListener("click", () => {
-      out.innerHTML = generateAllHtml();
-      renderCurrent();
-    });
-
-    document.getElementById("btn-general").addEventListener("click", () => {
-      out.innerHTML = generalOnlyHtml();
-      renderCurrent();
-    });
-
-    document.getElementById("btn-episode").addEventListener("click", () => {
-      out.innerHTML = episodeOnlyHtml();
-      renderCurrent();
-    });
-
-    document.getElementById("btn-interlude").addEventListener("click", () => {
-      out.innerHTML = interludeOnlyHtml();
-      renderCurrent();
-    });
-
-    document.getElementById("btn-copy").addEventListener("click", async () => {
-      try {
-        // Copy as plain text (strip HTML)
-        const text = out.innerText || "";
-        await navigator.clipboard.writeText(text);
-        alert("Copied!");
-      } catch(e){
-        alert("Copy failed (browser blocked it). Select the text and copy manually.");
-      }
-    });
-
-    document.getElementById("btn-reset").addEventListener("click", resetCharacter);
-
-    renderCurrent();
-    if (!out.innerText.trim()) out.innerHTML = `<p class="muted">Ready. Click <strong>Generate Full Starter</strong>.</p>`;
-  })();
-  </script>
+})();
+</script>
 </body>
 </html>
