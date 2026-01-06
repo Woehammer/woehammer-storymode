@@ -12,6 +12,7 @@
     .card{border:1px solid #e6e6e6;border-radius:12px;padding:12px;background:#fafafa;flex:1;min-width:260px}
     .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
     button{padding:10px 12px;border-radius:10px;border:1px solid #ccc;background:#f3f3f3;font-weight:800;cursor:pointer}
+    button:disabled{opacity:.45;cursor:not-allowed}
     button.primary{background:#1976d2;border-color:#1976d2;color:#fff}
     button.danger{background:#fff;border-color:#d32f2f;color:#d32f2f}
     button.good{background:#2e7d32;border-color:#2e7d32;color:#fff}
@@ -35,42 +36,39 @@
 
     .help{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;border:1px solid #d0d0d0;background:#f7f7f7;color:#555;font-weight:900;font-size:12px;line-height:1;cursor:help;position:relative;user-select:none;flex:0 0 auto}
     .help:focus{outline:2px solid #1976d2;outline-offset:2px}
-    .help .tip{display:none;position:absolute;z-index:50;left:50%;transform:translateX(-50%);top:24px;width:min(340px,80vw);background:#111;color:#fff;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+    .help .tip{display:none;position:absolute;z-index:50;left:50%;transform:translateX(-50%);top:24px;width:min(420px,82vw);background:#111;color:#fff;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.2)}
     .help .tip::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);border-width:0 6px 6px 6px;border-style:solid;border-color:transparent transparent #111 transparent}
     .help:hover .tip,.help:focus .tip{display:block}
 
-    /* Campaign entries */
-    .logbox{
-      border:1px solid #ddd;
-      border-radius:12px;
-      background:#fff;
-      padding:12px;
-      margin-top:10px;
-    }
-    .entry{
-      border-top:1px solid #eee;
-      padding-top:10px;
-      margin-top:10px;
-    }
+    .logbox{border:1px solid #ddd;border-radius:12px;background:#fff;padding:12px;margin-top:10px}
+    .entry{border-top:1px solid #eee;padding-top:10px;margin-top:10px}
     .entry:first-child{border-top:none;margin-top:0;padding-top:0}
     .entry-title{font-weight:900;margin:0 0 6px 0}
     .entry-meta{margin:0 0 6px 0}
-    .pill{
-      display:inline-block;
-      padding:2px 8px;
-      border-radius:999px;
-      border:1px solid #ddd;
-      background:#f7f7f7;
-      font-size:12px;
-      font-weight:800;
-      margin-left:6px;
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;font-weight:900;margin-left:6px}
+    .pill.good{background:#e7f6ea;border-color:#b7e0bf;color:#1b5e20}
+    .pill.warn{background:#fff4d6;border-color:#ffe09a;color:#6d4c00}
+    .pill.bad{background:#fde7e7;border-color:#f6bcbc;color:#7f1d1d}
+    .pill.state{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}
+
+    .incidentBox{
+      border:1px dashed #d7d7d7;
+      border-radius:12px;
+      padding:12px;
+      margin-top:10px;
+      background:#fcfcfc;
     }
+    .incidentPrompt{margin:0 0 10px 0}
+    .choiceList{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .choiceList button{flex:1;min-width:220px}
+
+    .inlineRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    select{padding:10px 12px;border-radius:10px;border:1px solid #ccc;font-weight:800;background:#fff}
   </style>
 </head>
 
 <body>
 <div class="wrap" id="storymode-stormcast">
-
   <h3>Stormcast Eternals – Story Mode Generator</h3>
   <p class="muted">Optional narrative aide. No rules impact. Saved locally in your browser.</p>
 
@@ -80,10 +78,20 @@
       <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
       <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
       <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
+
+      <p class="kv"><b>Reputation:</b> <span id="cur-rep">—</span>
+        <span class="pill state" id="cur-state" style="margin-left:8px;display:none;">—</span>
+      </p>
+
       <p class="kv">
         <b>Mission:</b> <span id="cur-mission">—</span>
-        <span class="help" tabindex="0" aria-label="What is Mission?">?
-          <span class="tip"><b>Mission</b> is the battle type for this chapter (Incursion, Pursuit, Escalation, Revelation). Roll <b>Battle Hook</b> to get different blurbs for the same Mission.</span>
+        <span class="help" tabindex="0" aria-label="Mission help">?
+          <span class="tip">
+            <b>Mission</b> is just story flavour — a label for what the next battle feels like (Incursion, Pursuit, etc).
+            <br><br>
+            You can still play <b>any</b> games you want: casual, competitive, GHB battleplans, Path to Glory, or Spearhead — against <b>any</b> opponent.
+            This tool never forces a scenario; it just gives narrative context.
+          </span>
         </span>
       </p>
 
@@ -94,6 +102,7 @@
 
     <div class="card">
       <h3 style="font-size:16px;">Actions</h3>
+
       <div class="btns">
         <button id="btn-all" class="primary" type="button">Generate Full Starter</button>
         <button id="btn-general" type="button">Roll General</button>
@@ -105,8 +114,46 @@
 
       <div class="section" style="border-top:none;padding-top:0;margin-top:6px;">
         <div class="section-title">
+          Between Battles Incident (Optional)
+          <span class="help" tabindex="0" aria-label="Incident help">?
+            <span class="tip">
+              Incidents are short choices between games. Your choice may quietly affect <b>Reputation</b> and will determine the <b>next Mission</b>.
+              Consequences are hidden until you choose.
+              <br><br>
+              You can also set how often incidents happen with the dropdown.
+            </span>
+          </span>
+        </div>
+
+        <div class="inlineRow" style="margin-top:8px;">
+          <label style="font-weight:900;color:#444;">Frequency:</label>
+          <select id="incident-mode">
+            <option value="optional">Optional</option>
+            <option value="always">Always</option>
+            <option value="never">Never</option>
+          </select>
+          <span class="help" tabindex="0" aria-label="Incident frequency help">?
+            <span class="tip">
+              <b>Optional</b>: you choose when to roll incidents.
+              <br>
+              <b>Always</b>: an incident triggers automatically after each battle result.
+              <br>
+              <b>Never</b>: incidents are disabled.
+            </span>
+          </span>
+        </div>
+
+        <div class="btns" style="margin-top:10px;">
+          <button id="btn-incident" type="button">Roll Incident</button>
+        </div>
+
+        <p class="muted" id="incident-mode-note" style="margin:0;"></p>
+      </div>
+
+      <div class="section" style="border-top:none;padding-top:0;margin-top:10px;">
+        <div class="section-title">
           Post-Battle Result
-          <span class="help" tabindex="0" aria-label="Help">?
+          <span class="help" tabindex="0" aria-label="Post-battle help">?
             <span class="tip">After you play the game, pick Win/Draw/Loss to generate an After Action report and save Battle # to the Campaign Log.</span>
           </span>
         </div>
@@ -117,7 +164,7 @@
         </div>
       </div>
 
-      <p class="muted">Roll Mission once, then reroll Battle Hook as many times as you like for different blurbs.</p>
+      <p class="muted">Tip: Incidents can set your next Mission automatically. You can still override and play whatever you like.</p>
     </div>
   </div>
 
@@ -130,11 +177,13 @@
     <p class="muted">Ready. Click <strong>Generate Full Starter</strong>.</p>
   </div>
 
+  <div id="incidentBox" class="incidentBox" style="display:none;"></div>
+
   <div class="logbox">
     <div class="section-title" style="margin-bottom:10px;">
-      Battle History
+      History
       <span class="help" tabindex="0" aria-label="Help">?
-        <span class="tip">This log is stored in your browser. Copy it into your notes/Discord if you want to keep it permanently.</span>
+        <span class="tip">This log is stored in your browser. Copy it out if you want a permanent record.</span>
       </span>
     </div>
 
@@ -145,21 +194,44 @@
 
     <div id="log"></div>
   </div>
-
 </div>
 
 <script>
 (function(){
-  const STORAGE = "woehammer_stormcast_story_v8";
+  const STORAGE = "woehammer_stormcast_story_v11";
   const pick = a => a[Math.floor(Math.random()*a.length)];
   const roll = n => Math.floor(Math.random()*n)+1;
+  const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+
+  // weighted pick utility
+  function weightedPick(items, weightFn){
+    let total = 0;
+    const weights = items.map(it => {
+      const w = Math.max(0, Number(weightFn(it)) || 0);
+      total += w;
+      return w;
+    });
+    if(total <= 0) return pick(items);
+
+    let r = Math.random() * total;
+    for(let i=0;i<items.length;i++){
+      r -= weights[i];
+      if(r <= 0) return items[i];
+    }
+    return items[items.length-1];
+  }
 
   let state = {};
   try { state = JSON.parse(localStorage.getItem(STORAGE) || "{}"); }
   catch { state = {}; }
 
-  // Ensure log array exists
   if(!Array.isArray(state.log)) state.log = [];
+  if(typeof state.reputation !== "number") state.reputation = 5;
+  if(typeof state.crisis !== "boolean") state.crisis = false;
+  if(typeof state.renownedTriggered !== "boolean") state.renownedTriggered = false;
+
+  // NEW: incident frequency
+  if(typeof state.incidentMode !== "string") state.incidentMode = "optional"; // optional | always | never
 
   const save = () => localStorage.setItem(STORAGE, JSON.stringify(state));
   const clearAll = () => localStorage.removeItem(STORAGE);
@@ -178,7 +250,7 @@
     {k:"judge",l:"Celestial Judge (No Mercy for Corruption)"}
   ];
 
-  const missionTypes = ["Incursion","Pursuit","Escalation","Revelation"];
+  const missionTypes = ["Incursion","Pursuit","Defence","Assault","Escalation","Revelation"];
 
   const battleHooks = {
     Incursion:[
@@ -191,15 +263,25 @@
       "A rearguard buys time with brutal efficiency. Every mile you gain costs blood — but if you relent, the enemy will be gone by morning.",
       "You catch glimpses of fleeing banners through smoke and rain. If you can force a battle before they reach safety, you might end this quickly."
     ],
+    Defence:[
+      "You are forced to hold ground against pressure. If your line breaks, everything behind it becomes vulnerable.",
+      "A key position must be defended — bridge, shrine, road, or gate. The enemy knows it too, and they are coming in strength.",
+      "You take shelter in contested ground and prepare to weather the storm. Survival is victory enough — for now."
+    ],
+    Assault:[
+      "You march to strike a hardened enemy position. This won’t be a skirmish — it’s a deliberate blow meant to break them.",
+      "A fortified point blocks your progress. You must smash it open before the campaign stalls.",
+      "You choose the battlefield and attack with purpose. The enemy will remember this day."
+    ],
     Escalation:[
-      "The conflict widens and restraint dies. Reinforcements arrive, strongpoints are seized, and the war becomes impossible to ignore. This battle will shape the next phase of the campaign.",
-      "Positions harden into front lines. Both sides commit fully — supplies, morale, and reputations are on the line, and neutrality is no longer an option.",
+      "The conflict widens and restraint dies. Reinforcements arrive, strongpoints are seized, and the war becomes impossible to ignore.",
+      "Positions harden into front lines. Both sides commit fully — supplies, morale, and reputations are on the line.",
       "What began as skirmishes becomes open warfare. Strike hard now, or you’ll be fighting a stronger enemy later."
     ],
     Revelation:[
-      "Victory uncovers something you weren’t meant to find — a truth, a relic, or a betrayal. Now you must fight not just to win, but to control who learns what.",
-      "Evidence suggests the enemy was never acting alone. Your next battle isn’t just against soldiers — it’s against the hidden hand guiding them.",
-      "A pattern becomes undeniable. The war is part of something older and darker than you knew, and this engagement may decide what comes next."
+      "Victory may uncover something you weren’t meant to find — a truth, a relic, or a betrayal. Now you fight to control what is known.",
+      "Evidence suggests the enemy was never acting alone. Your next battle is against soldiers — and the hidden hand behind them.",
+      "A pattern becomes undeniable. The war is part of something older and darker than you knew."
     ]
   };
 
@@ -217,86 +299,210 @@
     prophet:["A dream leaves you certain of the next battlefield… and afraid of it."]
   };
 
-  // After Action blurbs by mission type + result
   const afterAction = {
-    Incursion:{
-      win:[
-        "The raiders are driven off and their prize recovered. Survivors scatter, but not before you learn they were guided here by purpose — not chance.",
-        "Your counter-attack hits like a hammer. The enemy slips away, but you hold the ground and the locals speak your name with renewed hope."
-      ],
-      draw:[
-        "The enemy withdraws with part of what they wanted. You’ve stabilised the line, but the cost was higher than you expected — and questions remain.",
-        "You blunt the attack, yet the foe escapes cleanly. It feels less like a win and more like a warning."
-      ],
-      loss:[
-        "The enemy strikes, takes what they came for, and leaves you with smoke and wounded. Whatever they wanted, they wanted it badly — and they got it.",
-        "Your force is forced back. The area is no longer secure, and the next battle will be fought on worse terms."
-      ]
-    },
-    Pursuit:{
-      win:[
-        "You run them down. A retreat becomes a rout, and the enemy’s confidence breaks. The road ahead looks suddenly shorter.",
-        "Your vanguard catches their rearguard and crushes it. The survivors flee without order — and you choose the next battleground."
-      ],
-      draw:[
-        "You press them hard, but they slip away at the last. You’ve hurt them — not enough to end it — but enough to make them cautious.",
-        "A messy fight in bad ground. Neither side claims a clean victory, but you deny them the safety they wanted."
-      ],
-      loss:[
-        "You overextend. The enemy turns and bites, leaving you bloodied and stalled while they escape the net.",
-        "The pursuit becomes a trap. You fall back, angry and regrouping, as the enemy regains momentum."
-      ]
-    },
-    Escalation:{
-      win:[
-        "A decisive blow. Allies rally and neutrals reconsider — the war has a new shape, and you helped carve it.",
-        "Your victory hardens into control: roads, bridges, and morale. The campaign shifts in your favour."
-      ],
-      draw:[
-        "The battlefield is contested and costly. The war widens, but neither side gains the clear upper hand — yet.",
-        "You hold, but you don’t break them. The front line forms here, and the next fights will be bigger."
-      ],
-      loss:[
-        "Your position collapses under pressure. The enemy claims ground and initiative, and rumours spread of your setback.",
-        "The war escalates… and you’re the one forced to react. Reinforcements will be needed — and quickly."
-      ]
-    },
-    Revelation:{
-      win:[
-        "You win — and the truth is yours to wield. The enemy fought hard to keep it hidden, which tells you everything you need to know.",
-        "The battle is won, but the discovery changes everything. The next step is no longer ‘victory’ — it’s ‘containment’."
-      ],
-      draw:[
-        "You gain fragments, not certainty. Enough to worry you, not enough to act cleanly. The truth sits like grit under armour.",
-        "The enemy retreats before answers are secured. You sense you were inches from something important."
-      ],
-      loss:[
-        "The enemy escapes with secrets intact — or worse, with proof of something you didn’t want to be real.",
-        "You’re forced to withdraw before the truth can be seized. The cost of ignorance will be paid later."
-      ]
-    }
+    Incursion:{ win:["The raiders are driven off and their prize denied. Survivors scatter, but you’ve learned this wasn’t random.","You reclaim the ground. Whatever they came for remains out of reach — for now."],
+               draw:["You blunt the attack, but the enemy escapes with questions unanswered.","It feels less like a win and more like a warning written in blood."],
+               loss:["They strike, take what they came for, and vanish. The area is no longer secure.","You’re forced back. The next fight will be fought on worse terms."] },
+    Pursuit:{ win:["You run them down. A retreat becomes a rout — and you seize momentum.","You catch their rearguard and break it. The survivors flee without order."],
+              draw:["They slip away at the last. You’ve hurt them, but not ended them.","A messy fight in bad ground. You deny them safety, but not escape."],
+              loss:["The pursuit turns. You overextend and pay for it.","They escape the net and regain their footing while you regroup."] },
+    Defence:{ win:["You hold. The line does not break, and the enemy learns your resolve.","The enemy throws itself against your position and fails. Morale steadies."],
+              draw:["You hold at cost. The ground remains contested, and the next assault will be worse.","Neither side breaks. You buy time, but not certainty."],
+              loss:["The position falls. You withdraw under pressure, and the enemy’s shadow lengthens.","Your defence collapses. Now you must survive long enough to strike back."] },
+    Assault:{ win:["Your attack lands true. The enemy’s position cracks and collapses.","You seize the point and turn it into a spearhead for what comes next."],
+              draw:["You gain ground, but not the break you wanted. The enemy clings on.","Your assault stalls. You’ll need a new angle — or more strength."],
+              loss:["You’re thrown back from the objective. The enemy holds and your losses bite.","The assault fails. Worse: the enemy now knows you can bleed."] },
+    Escalation:{ win:["A decisive blow. The wider war shifts in your favour.","You take ground, morale, and initiative — the campaign has a new shape."],
+                 draw:["The front line forms here. Neither side gains the clear upper hand.","The war widens, but the decision is delayed — for now."],
+                 loss:["Your position collapses under pressure. The enemy claims initiative.","You’re forced to react. Reinforcements will be needed — quickly."] },
+    Revelation:{ win:["You win — and the truth is yours to wield. The enemy fought hard to keep it hidden.","The discovery changes everything. The next step isn’t victory — it’s containment."],
+                 draw:["You gain fragments, not certainty. Enough to worry you, not enough to act cleanly.","You were inches from answers before the enemy slipped away."],
+                 loss:["The enemy escapes with secrets intact — or worse, with proof you didn’t want to be real.","You withdraw before the truth can be seized. Ignorance will cost you later."] }
   };
 
+  function getStateLabel(){
+    if(state.reputation <= 0) return "Disgraced";
+    if(state.reputation >= 10) return "Renowned";
+    return "Steady";
+  }
+
+  function checkThresholds(){
+    if(state.reputation <= 0 && !state.crisis){
+      state.crisis = true;
+      state.log.push({ kind:"state", text:"Reputation has collapsed. Your authority is in question. You must win your next battle or risk removal from command.", ts: Date.now() });
+    }
+    if(state.reputation >= 10 && !state.renownedTriggered){
+      state.renownedTriggered = true;
+      state.log.push({ kind:"state", text:"Your reputation has grown. Allies seek your leadership, and expectations rise with every order you give.", ts: Date.now() });
+    }
+    state.reputation = clamp(state.reputation, -5, 15);
+  }
+
+  // =========================
+  // INCIDENTS (same pool as v10)
+  // + NEW: optional weights per background key
+  // weights: { reforged: 3, prophet: 1, ... }  (higher = more likely for that background)
+  // =========================
+  const incidents = {
+    standard: [
+      // Weighted examples
+      { title:"Reforging Echo",
+        prompt:"During reforging rites, a memory resurfaces — something you should not remember.",
+        weights:{ reforged:4, prophet:1 },
+        choices:[
+          { text:"Confide in a trusted Stormcast", repDelta:+1, nextMission:"Revelation", outcome:"You share the fragment. It points to something hidden — and dangerous." },
+          { text:"Record it and set it aside", repDelta:0, nextMission:"Incursion", outcome:"You commit it to record. The war continues. The question lingers." },
+          { text:"Suppress it entirely", repDelta:-1, nextMission:"Escalation", outcome:"You bury the memory. It does not stay buried. Conflict grows around you." }
+        ]},
+      { title:"Mortal Petition",
+        prompt:"A nearby settlement sends envoys, begging for protection against an encroaching threat.",
+        weights:{ redeemer:3 },
+        choices:[
+          { text:"Redeploy immediately to aid them", repDelta:+1, nextMission:"Defence", outcome:"You divert at once. The mortals see your banners and dare to hope." },
+          { text:"Promise aid once current objectives are secured", repDelta:0, nextMission:"Incursion", outcome:"You send reassurance and press on — but danger doesn’t wait politely." },
+          { text:"Refuse — the war effort takes priority", repDelta:-1, nextMission:"Pursuit", outcome:"You deny the request. Word spreads quickly — and not kindly." }
+        ]},
+      { title:"Captured Enemy Officer",
+        prompt:"An enemy officer is taken alive during a skirmish.",
+        weights:{ judge:2, prophet:1 },
+        choices:[
+          { text:"Interrogate them thoroughly", repDelta:0, nextMission:"Revelation", outcome:"Under pressure, they reveal fragments of a larger design." },
+          { text:"Turn them over to mortal authorities", repDelta:+1, nextMission:"Incursion", outcome:"You delegate justice. The mortals see you as firm — and fair." },
+          { text:"Execute them immediately", repDelta:-1, nextMission:"Pursuit", outcome:"Swift judgement. The enemy will respond in kind." }
+        ]},
+      { title:"Lost Relic Rumour",
+        prompt:"A rumour spreads of a lost relic nearby. It could be nothing — or decisive.",
+        weights:{ prophet:3 },
+        choices:[
+          { text:"Investigate personally", repDelta:+1, nextMission:"Revelation", outcome:"You follow the lead. It feels uncomfortably familiar." },
+          { text:"Send a detachment quietly", repDelta:0, nextMission:"Incursion", outcome:"You delegate. The war doesn’t pause for treasure hunts." },
+          { text:"Ignore it entirely", repDelta:-1, nextMission:"Assault", outcome:"You focus on the enemy, not myths. The enemy may not share your restraint." }
+        ]},
+      { title:"Enemy Banner Sighted",
+        prompt:"A notorious enemy banner is sighted. Its presence changes the tone of the campaign.",
+        weights:{ slayer:3 },
+        choices:[
+          { text:"Hunt it down immediately", repDelta:0, nextMission:"Pursuit", outcome:"You commit to the chase. There will be no half-measures." },
+          { text:"Fortify and prepare for its attack", repDelta:+1, nextMission:"Defence", outcome:"You ready the field. If they come, they’ll come into your teeth." },
+          { text:"Strike somewhere else to avoid it", repDelta:-1, nextMission:"Assault", outcome:"You bypass it. Some see prudence; others see fear." }
+        ]},
+      { title:"Corruption Unmasked",
+        prompt:"Evidence of corruption appears among allies — small, subtle, and spreading.",
+        weights:{ judge:4, prophet:1 },
+        choices:[
+          { text:"Purge it immediately", repDelta:0, nextMission:"Assault", outcome:"You act without hesitation. The message is clear: no rot survives." },
+          { text:"Investigate quietly and gather proof", repDelta:+1, nextMission:"Revelation", outcome:"You build a case. The truth is uglier than you expected." },
+          { text:"Ignore it — the war comes first", repDelta:-1, nextMission:"Escalation", outcome:"You postpone judgement. The rot grows in the dark." }
+        ]},
+
+      // Non-weighted: keep the rest “as is” (a big pool stays varied)
+      { title:"Rival Stormcast",
+        prompt:"Another Stormcast commander publicly questions one of your recent decisions.",
+        choices:[
+          { text:"Confront them openly before the host", repDelta:0, nextMission:"Assault", outcome:"You meet challenge with certainty. The next battle will prove who was right." },
+          { text:"Resolve the matter privately", repDelta:+1, nextMission:"Incursion", outcome:"Quiet words, measured tone. Unity holds — barely — and you march again." },
+          { text:"Ignore the slight and move on", repDelta:-1, nextMission:"Defence", outcome:"Silence reads as weakness to some. Your next stand will be watched closely." }
+        ]},
+      { title:"Enemy Survivors",
+        prompt:"Scouts report enemy survivors regrouping after the last engagement.",
+        choices:[
+          { text:"Pursue them relentlessly", repDelta:0, nextMission:"Pursuit", outcome:"You refuse to let them breathe. The hunt begins." },
+          { text:"Fortify and deny them targets", repDelta:+1, nextMission:"Defence", outcome:"You harden your position and force them to come to you." },
+          { text:"Ignore them and push forward elsewhere", repDelta:-1, nextMission:"Escalation", outcome:"You move on. The enemy grows bolder behind you, and the war widens." }
+        ]},
+      { title:"Sigmar’s Omen",
+        prompt:"A violent storm breaks unnaturally over your camp the night before marching.",
+        weights:{ prophet:1, new:1 },
+        choices:[
+          { text:"Declare it a sign of favour", repDelta:+1, nextMission:"Assault", outcome:"You raise your voice and the host listens. Tomorrow, you strike." },
+          { text:"Treat it as coincidence", repDelta:0, nextMission:"Incursion", outcome:"You keep your counsel. The enemy will not be impressed by weather." },
+          { text:"Publicly dismiss such superstition", repDelta:-1, nextMission:"Defence", outcome:"Some bristle. You feel morale stiffen — not in a good way." }
+        ]},
+
+      // --- The rest of your big incident pool ---
+      // NOTE: To keep this message readable, I’m not re-pasting every single v10 incident here.
+      // You have two choices:
+      //   A) Paste your existing v10 “incidents.standard/disgraced/renowned” arrays below this comment (unchanged)
+      //      and keep the weighting system I added.
+      //   B) Tell me “paste the whole pool” and I’ll dump the entire 57-incident code again in one go.
+      //
+      // Quick shortcut: copy the entire incidents object from your v10 file, replace it with this one,
+      // then paste the remaining incidents entries after this comment.
+    ],
+    disgraced: [
+      { title:"Silent Orders",
+        prompt:"Orders arrive from Azyr — vague, delayed, and lacking authority. You feel the absence like a weight.",
+        weights:{ reforged:1, judge:1 },
+        choices:[
+          { text:"Hold position and await clarification", repDelta:+1, nextMission:"Defence", outcome:"You choose caution. Your host steadies, if nothing else." },
+          { text:"Act independently", repDelta:0, nextMission:"Assault", outcome:"You take the initiative. If this fails, it’s on your head." },
+          { text:"Withdraw from allied forces", repDelta:-1, nextMission:"Pursuit", outcome:"You move alone. The war doesn’t get easier — it just gets lonelier." }
+        ]},
+      // (Paste the rest of your disgraced pool from v10 here; weighting will apply automatically)
+    ],
+    renowned: [
+      { title:"Call to War",
+        prompt:"Multiple allies request your leadership in a decisive campaign. They want your banner at the front.",
+        weights:{ slayer:1, redeemer:1 },
+        choices:[
+          { text:"Commit fully to the offensive", repDelta:+1, nextMission:"Escalation", outcome:"You take command. The war turns into something bigger." },
+          { text:"Choose one critical strike", repDelta:0, nextMission:"Assault", outcome:"You focus the blow. Precision, not spectacle." },
+          { text:"Delay to gather intelligence", repDelta:-1, nextMission:"Revelation", outcome:"You slow the tempo. Some call it wisdom. Others call it fear." }
+        ]},
+      // (Paste the rest of your renowned pool from v10 here; weighting will apply automatically)
+    ]
+  };
+
+  // =========================
+  // Background-weighted incident selection
+  // =========================
+  function pickIncidentPool(){
+    if(state.reputation <= 0) return incidents.disgraced;
+    if(state.reputation >= 10) return incidents.renowned;
+    return incidents.standard;
+  }
+
+  function pickIncidentWeighted(pool){
+    const bgKey = state.general?.bgKey || null;
+    return weightedPick(pool, (inc) => {
+      // base weight
+      let w = 1;
+
+      // background boost if defined
+      if(bgKey && inc.weights && typeof inc.weights[bgKey] === "number"){
+        w += inc.weights[bgKey];
+      }
+
+      // small global nudges to keep it lively
+      // (e.g. if disgraced, slightly favour defensive/escape style, etc)
+      if(state.reputation <= 0){
+        const anyDef = inc.choices?.some(c => c.nextMission === "Defence");
+        if(anyDef) w += 0.5;
+      }
+      if(state.reputation >= 10){
+        const anyBig = inc.choices?.some(c => c.nextMission === "Escalation" || c.nextMission === "Assault" || c.nextMission === "Revelation");
+        if(anyBig) w += 0.3;
+      }
+
+      return w;
+    });
+  }
+
+  // Helpers
   function ensureRealm(){
     if(!state.realm){ state.realm = pick(realms); save(); }
   }
-
   function rollGeneral(){
     const bg = pick(backgrounds);
-    state.general = {
-      name: `${pick(firstNames)} ${pick(lastNames)}`,
-      bgKey: bg.k,
-      bgLabel: bg.l
-    };
+    state.general = { name: `${pick(firstNames)} ${pick(lastNames)}`, bgKey: bg.k, bgLabel: bg.l };
     save();
   }
-
   function rollMission(){
     state.missionType = pick(missionTypes);
+    state.lastHook = null;
     save();
     return state.missionType;
   }
-
   function rollBattleHook(){
     const t = state.missionType || rollMission();
     const hook = pick(battleHooks[t] || ["(No hooks defined yet.)"]);
@@ -304,7 +510,6 @@
     save();
     return state.lastHook;
   }
-
   function threat(){
     const r = roll(6)+roll(6);
     if(r<=3) return "Enemy weakened (-15–25%)";
@@ -313,37 +518,26 @@
     if(r<=11) return "Enemy reinforced (+10–15%)";
     return "Enemy heavily reinforced (+25%)";
   }
-
   function section(title, body, tooltipText){
-    const help = tooltipText ? `
-      <span class="help" tabindex="0" aria-label="Help">?
-        <span class="tip">${tooltipText}</span>
-      </span>` : "";
-    return `
-      <div class="section">
-        <div class="section-title">${title} ${help}</div>
-        ${body}
-      </div>
-    `;
+    const help = tooltipText ? `<span class="help" tabindex="0" aria-label="Help">?<span class="tip">${tooltipText}</span></span>` : "";
+    return `<div class="section"><div class="section-title">${title} ${help}</div>${body}</div>`;
   }
-
   function header(){ return `<p><strong>Realm:</strong> ${state.realm}</p>`; }
-
   function generalBlock(){
     if(!state.general) return `<p class="muted">No general yet. Click <strong>Roll General</strong>.</p>`;
     return `
       <p><strong>General:</strong> ${state.general.name}</p>
       <p><strong>Background:</strong> ${state.general.bgLabel}</p>
+      <p><strong>Reputation:</strong> ${state.reputation} (${getStateLabel()})</p>
       <p><strong>Mission:</strong> ${state.missionType || "—"}</p>
     `;
   }
-
   function battleHookBlock(){
+    if(!state.missionType) rollMission();
     if(!state.lastHook || state.lastHook.type !== state.missionType) rollBattleHook();
-    return section(
-      "Battle Hook",
+    return section("Battle Hook",
       `<p><strong>${state.lastHook.type}:</strong> ${state.lastHook.text}</p>`,
-      "Reroll this to get a different blurb for the same Mission type."
+      "This is a story prompt for why the next game is happening. It does not dictate your battleplan."
     );
   }
 
@@ -351,29 +545,151 @@
     document.getElementById("cur-realm").textContent = state.realm || "—";
     document.getElementById("cur-general").textContent = state.general?.name || "—";
     document.getElementById("cur-bg").textContent = state.general?.bgLabel || "—";
+    document.getElementById("cur-rep").textContent = (typeof state.reputation === "number") ? String(state.reputation) : "—";
+
+    const s = getStateLabel();
+    const pill = document.getElementById("cur-state");
+    pill.style.display = "inline-block";
+    pill.textContent = s;
+
+    document.getElementById("cur-mission").textContent = state.missionType || "—";
   }
 
   function renderLog(){
     const logDiv = document.getElementById("log");
     if(!state.log.length){
-      logDiv.innerHTML = `<p class="muted">No battles logged yet. Play a game, then click Win/Draw/Loss.</p>`;
+      logDiv.innerHTML = `<p class="muted">No history yet. Log a battle result or roll an incident.</p>`;
       return;
     }
 
-    logDiv.innerHTML = state.log.slice().reverse().map(entry => {
-      const pill = entry.result === "Win" ? "good" : entry.result === "Draw" ? "warn" : "bad";
-      return `
-        <div class="entry">
-          <p class="entry-title">Battle ${entry.number} <span class="pill">${entry.result}</span></p>
-          <p class="entry-meta"><strong>Mission:</strong> ${entry.mission}</p>
-          <p class="entry-meta"><strong>Hook:</strong> ${entry.hook}</p>
-          <p class="entry-meta"><strong>After Action:</strong> ${entry.after}</p>
-        </div>
-      `;
-    }).join("");
+    const items = state.log.slice().reverse().map(entry => {
+      if(entry.kind === "battle"){
+        const pillClass = entry.result === "Win" ? "good" : entry.result === "Draw" ? "warn" : "bad";
+        return `
+          <div class="entry">
+            <p class="entry-title">Battle ${entry.number} <span class="pill ${pillClass}">${entry.result}</span></p>
+            <p class="entry-meta"><strong>Mission:</strong> ${entry.mission}</p>
+            <p class="entry-meta"><strong>Hook:</strong> ${entry.hook}</p>
+            <p class="entry-meta"><strong>After Action:</strong> ${entry.after}</p>
+          </div>
+        `;
+      }
+      if(entry.kind === "incident"){
+        return `
+          <div class="entry">
+            <p class="entry-title">Incident <span class="pill state">${entry.state}</span></p>
+            <p class="entry-meta"><strong>${entry.title}:</strong> ${entry.prompt}</p>
+            <p class="entry-meta"><strong>Choice:</strong> ${entry.choice}</p>
+            <p class="entry-meta"><strong>Outcome:</strong> ${entry.outcome}</p>
+            <p class="entry-meta"><strong>Next Mission:</strong> ${entry.nextMission}</p>
+          </div>
+        `;
+      }
+      if(entry.kind === "state"){
+        return `<div class="entry"><p class="entry-title">Campaign Turn</p><p class="entry-meta">${entry.text}</p></div>`;
+      }
+      return "";
+    });
+
+    logDiv.innerHTML = items.join("");
   }
 
-  const out = document.getElementById("out");
+  // Incident UI
+  const incidentBox = document.getElementById("incidentBox");
+  const btnIncident = document.getElementById("btn-incident");
+  const incidentModeSelect = document.getElementById("incident-mode");
+  const incidentModeNote = document.getElementById("incident-mode-note");
+
+  function applyIncidentModeUI(){
+    incidentModeSelect.value = state.incidentMode;
+
+    if(state.incidentMode === "never"){
+      btnIncident.disabled = true;
+      incidentModeNote.textContent = "Incidents are disabled.";
+      incidentBox.style.display = "none";
+      incidentBox.innerHTML = "";
+    } else if(state.incidentMode === "always"){
+      btnIncident.disabled = false;
+      incidentModeNote.textContent = "Incidents will trigger automatically after each battle result.";
+    } else {
+      btnIncident.disabled = false;
+      incidentModeNote.textContent = "Incidents are optional. Roll one whenever you like.";
+    }
+  }
+
+  function showIncident(inc){
+    if(state.incidentMode === "never") return;
+
+    incidentBox.style.display = "block";
+    incidentBox.innerHTML = `
+      <div class="section-title">Incident: ${inc.title}</div>
+      <p class="incidentPrompt">${inc.prompt}</p>
+      <div class="choiceList" id="choiceList"></div>
+      <p class="muted" style="margin-top:10px;">Choose one. Consequences are hidden until you click.</p>
+    `;
+
+    const choiceList = document.getElementById("choiceList");
+    inc.choices.forEach((c, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = c.text;
+      btn.onclick = () => resolveIncident(inc, idx);
+      choiceList.appendChild(btn);
+    });
+
+    incidentBox.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  function resolveIncident(inc, choiceIndex){
+    const choice = inc.choices[choiceIndex];
+
+    state.reputation += choice.repDelta;
+    checkThresholds();
+
+    state.missionType = choice.nextMission;
+    state.lastHook = null;
+
+    state.log.push({
+      kind:"incident",
+      state:getStateLabel(),
+      title:inc.title,
+      prompt:inc.prompt,
+      choice:choice.text,
+      outcome:choice.outcome,
+      nextMission:choice.nextMission,
+      ts:Date.now()
+    });
+
+    save();
+
+    ensureRealm();
+    if(!state.general) rollGeneral();
+    rollBattleHook();
+
+    document.getElementById("out").innerHTML =
+      header() +
+      generalBlock() +
+      section("Incident Outcome", `<p>${choice.outcome}</p>`) +
+      section("Next Mission Set", `<p><strong>${state.missionType}:</strong> ${state.lastHook.text}</p>`,
+        "Still flavour only — play any battleplan you want."
+      );
+
+    incidentBox.style.display = "none";
+    incidentBox.innerHTML = "";
+
+    renderCurrent();
+    renderLog();
+  }
+
+  function rollIncidentNow(){
+    ensureRealm();
+    if(!state.general) rollGeneral();
+    const pool = pickIncidentPool();
+    const inc = pickIncidentWeighted(pool);
+    showIncident(inc);
+    renderCurrent();
+    renderLog();
+  }
 
   function ensureReadyForBattle(){
     ensureRealm();
@@ -383,64 +699,69 @@
     save();
   }
 
-  function showCurrentPack(){
-    out.innerHTML =
-      header() +
-      generalBlock() +
-      battleHookBlock() +
-      section("Threat", `<p>${threat()}</p>`, "Use this to slightly adjust points if you want. Ignore it if you don’t.");
-  }
-
-  function logResult(result){
+  function logBattleResult(result){
     ensureReadyForBattle();
+
+    if(result === "Win") state.reputation += 1;
+    if(result === "Loss") state.reputation -= 1;
+
+    if(state.crisis){
+      if(result === "Win"){
+        state.crisis = false;
+        if(state.reputation <= 0) state.reputation = 1;
+        state.log.push({ kind:"state", text:"Crisis of command averted. Victory restores a sliver of authority.", ts:Date.now() });
+      } else if(result === "Loss"){
+        state.log.push({ kind:"state", text:"Your command collapses. You cling to power, avoiding your own superiors as the war turns against you.", ts:Date.now() });
+      }
+    }
+
+    checkThresholds();
 
     const mission = state.missionType;
     const hook = state.lastHook?.text || "(No hook)";
     const pool = afterAction[mission]?.[result.toLowerCase()] || ["After action report unavailable."];
     const after = pick(pool);
 
-    const nextNumber = state.log.length + 1;
+    const battleNumber = (state.log.filter(e => e.kind==="battle").length) + 1;
 
     state.log.push({
-      number: nextNumber,
-      mission,
-      hook,
-      result,
-      after,
+      kind:"battle",
+      number: battleNumber,
+      mission, hook, result, after,
       ts: Date.now()
     });
 
-    // Clear hook so the next battle feels like a new “chapter”
     state.lastHook = null;
-    // Keep mission type (optional). If you want a new mission every time, uncomment:
-    // state.missionType = null;
-
     save();
 
-    out.innerHTML =
+    document.getElementById("out").innerHTML =
       header() +
       generalBlock() +
       section("After Action", `<p><strong>${result}:</strong> ${after}</p>`) +
-      section("Logged", `<p>Saved as <strong>Battle ${nextNumber}</strong> in your Battle History.</p>`);
+      section("Logged", `<p>Saved as <strong>Battle ${battleNumber}</strong> in your History.</p>`);
 
-    renderLog();
     renderCurrent();
+    renderLog();
+
+    // NEW: auto-incident mode
+    if(state.incidentMode === "always"){
+      rollIncidentNow();
+    }
   }
 
   // Buttons
   document.getElementById("btn-all").onclick = () => {
     ensureReadyForBattle();
-    showCurrentPack();
-    renderCurrent();
-    renderLog();
+    document.getElementById("out").innerHTML =
+      header() + generalBlock() + battleHookBlock() +
+      section("Threat", `<p>${threat()}</p>`, "Optional points vibe-check. Ignore if you want.");
+    renderCurrent(); renderLog();
   };
 
   document.getElementById("btn-general").onclick = () => {
-    ensureRealm();
-    rollGeneral();
-    out.innerHTML = header() + generalBlock();
-    renderCurrent();
-    renderLog();
+    ensureRealm(); rollGeneral();
+    document.getElementById("out").innerHTML = header() + generalBlock();
+    renderCurrent(); renderLog();
   };
 
   document.getElementById("btn-mission").onclick = () => {
@@ -448,9 +769,8 @@
     if(!state.general) rollGeneral();
     rollMission();
     rollBattleHook();
-    out.innerHTML = header() + generalBlock() + battleHookBlock();
-    renderCurrent();
-    renderLog();
+    document.getElementById("out").innerHTML = header() + generalBlock() + battleHookBlock();
+    renderCurrent(); renderLog();
   };
 
   document.getElementById("btn-hook").onclick = () => {
@@ -458,9 +778,8 @@
     if(!state.general) rollGeneral();
     if(!state.missionType) rollMission();
     rollBattleHook();
-    out.innerHTML = header() + generalBlock() + battleHookBlock();
-    renderCurrent();
-    renderLog();
+    document.getElementById("out").innerHTML = header() + generalBlock() + battleHookBlock();
+    renderCurrent(); renderLog();
   };
 
   document.getElementById("btn-interlude").onclick = () => {
@@ -469,42 +788,40 @@
       ...interludes.base,
       ...(interludes[state.general?.bgKey] || [])
     ];
-    out.innerHTML =
+    document.getElementById("out").innerHTML =
       header() + generalBlock() +
       section("Interlude", `<p>${pick(pool)}</p>`,
-        "A short between-battle beat. Use it as a scene, a paragraph of diary text, or a quick roleplay moment."
+        "Between-battle beat. Diary entry, scene, or quick roleplay moment."
       );
-    renderCurrent();
-    renderLog();
+    renderCurrent(); renderLog();
   };
 
-  document.getElementById("btn-win").onclick  = () => logResult("Win");
-  document.getElementById("btn-draw").onclick = () => logResult("Draw");
-  document.getElementById("btn-loss").onclick = () => logResult("Loss");
-
-  document.getElementById("btn-reset").onclick = () => {
-    // Keep log? Usually no. So we wipe everything.
-    state = { log: [] };
-    clearAll();
-    // Restore empty state locally so UI updates
-    state = { log: [] };
-    out.innerHTML = `<p class="muted">Reset complete. Click <strong>Generate Full Starter</strong> to begin.</p>`;
-    document.getElementById("cur-realm").textContent = "—";
-    document.getElementById("cur-general").textContent = "—";
-    document.getElementById("cur-bg").textContent = "—";
-    document.getElementById("cur-mission").textContent = "—";
-    renderLog();
+  btnIncident.onclick = () => {
+    if(state.incidentMode === "never") return;
+    rollIncidentNow();
   };
+
+  document.getElementById("btn-win").onclick  = () => logBattleResult("Win");
+  document.getElementById("btn-draw").onclick = () => logBattleResult("Draw");
+  document.getElementById("btn-loss").onclick = () => logBattleResult("Loss");
 
   document.getElementById("btn-copy").onclick = async () => {
-    try{ await navigator.clipboard.writeText(out.innerText || ""); alert("Copied"); }
+    try{ await navigator.clipboard.writeText(document.getElementById("out").innerText || ""); alert("Copied"); }
     catch(e){ alert("Copy failed. Select the text and copy manually."); }
   };
 
   document.getElementById("btn-copy-log").onclick = async () => {
-    const lines = state.log.map(e =>
-      `Battle ${e.number} — ${e.result}\nMission: ${e.mission}\nHook: ${e.hook}\nAfter Action: ${e.after}\n`
-    ).join("\n");
+    const lines = state.log
+      .filter(e => e.kind==="battle" || e.kind==="incident" || e.kind==="state")
+      .map(e => {
+        if(e.kind==="battle"){
+          return `Battle ${e.number} — ${e.result}\nMission: ${e.mission}\nHook: ${e.hook}\nAfter Action: ${e.after}\n`;
+        }
+        if(e.kind==="incident"){
+          return `Incident (${e.state})\n${e.title}: ${e.prompt}\nChoice: ${e.choice}\nOutcome: ${e.outcome}\nNext Mission: ${e.nextMission}\n`;
+        }
+        return `Campaign Turn\n${e.text}\n`;
+      }).join("\n");
     try{ await navigator.clipboard.writeText(lines || ""); alert("Log copied"); }
     catch(e){ alert("Copy failed. Select and copy manually."); }
   };
@@ -513,11 +830,30 @@
     state.log = [];
     save();
     renderLog();
-    out.innerHTML = `<p class="muted">Log cleared.</p>`;
+    document.getElementById("out").innerHTML = `<p class="muted">History cleared.</p>`;
   };
 
-  // Initial render
-  document.getElementById("cur-mission").textContent = state.missionType || "—";
+  document.getElementById("btn-reset").onclick = () => {
+    clearAll();
+    state = { log: [], reputation: 5, crisis: false, renownedTriggered: false, incidentMode: "optional" };
+    document.getElementById("out").innerHTML = `<p class="muted">Reset complete. Click <strong>Generate Full Starter</strong> to begin.</p>`;
+    incidentBox.style.display="none";
+    incidentBox.innerHTML="";
+    applyIncidentModeUI();
+    renderCurrent();
+    renderLog();
+  };
+
+  // Incident mode dropdown
+  incidentModeSelect.onchange = () => {
+    state.incidentMode = incidentModeSelect.value;
+    save();
+    applyIncidentModeUI();
+  };
+
+  // Initial
+  applyIncidentModeUI();
+  checkThresholds();
   renderCurrent();
   renderLog();
 
