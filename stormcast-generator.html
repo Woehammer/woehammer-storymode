@@ -64,6 +64,8 @@
 
     .inlineRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     select{padding:10px 12px;border-radius:10px;border:1px solid #ccc;font-weight:800;background:#fff}
+
+    .divider{height:1px;background:#e9e9e9;margin:12px 0}
   </style>
 </head>
 
@@ -112,15 +114,31 @@
         <button id="btn-copy" type="button">Copy</button>
       </div>
 
-      <div class="section" style="border-top:none;padding-top:0;margin-top:6px;">
+      <div class="divider"></div>
+
+      <!-- POST-BATTLE RESULT MOVED HERE: directly above incident -->
+      <div class="section" style="border-top:none;padding-top:0;margin-top:0;">
+        <div class="section-title">
+          Post-Battle Result
+          <span class="help" tabindex="0" aria-label="Post-battle help">?
+            <span class="tip">After you play the game, pick Win/Draw/Loss to generate an After Action report and save Battle # to the Campaign Log. This also updates Reputation.</span>
+          </span>
+        </div>
+        <div class="btns" style="margin-top:8px;">
+          <button id="btn-win" class="good" type="button">Win</button>
+          <button id="btn-draw" class="warn" type="button">Draw</button>
+          <button id="btn-loss" class="bad" type="button">Loss</button>
+        </div>
+        <p class="muted" style="margin:0;">Tip: If incidents are set to “Always”, one will trigger after you log the result.</p>
+      </div>
+
+      <div class="section" style="border-top:none;padding-top:0;margin-top:10px;">
         <div class="section-title">
           Between Battles Incident (Optional)
           <span class="help" tabindex="0" aria-label="Incident help">?
             <span class="tip">
-              Incidents are short choices between games. Your choice may quietly affect <b>Reputation</b> and will determine the <b>next Mission</b>.
+              Incidents are short choices between games. Your choice may quietly affect <b>Reputation</b> and can set your <b>next Mission</b>.
               Consequences are hidden until you choose.
-              <br><br>
-              You can also set how often incidents happen with the dropdown.
             </span>
           </span>
         </div>
@@ -148,23 +166,12 @@
         </div>
 
         <p class="muted" id="incident-mode-note" style="margin:0;"></p>
+
+        <!-- Incident box now lives HERE so it’s in the right place -->
+        <div id="incidentBox" class="incidentBox" style="display:none;"></div>
       </div>
 
-      <div class="section" style="border-top:none;padding-top:0;margin-top:10px;">
-        <div class="section-title">
-          Post-Battle Result
-          <span class="help" tabindex="0" aria-label="Post-battle help">?
-            <span class="tip">After you play the game, pick Win/Draw/Loss to generate an After Action report and save Battle # to the Campaign Log.</span>
-          </span>
-        </div>
-        <div class="btns" style="margin-top:8px;">
-          <button id="btn-win" class="good" type="button">Win</button>
-          <button id="btn-draw" class="warn" type="button">Draw</button>
-          <button id="btn-loss" class="bad" type="button">Loss</button>
-        </div>
-      </div>
-
-      <p class="muted">Tip: Incidents can set your next Mission automatically. You can still override and play whatever you like.</p>
+      <p class="muted" style="margin:0;">Reminder: this is narrative flavour only. Play whatever battleplan you like.</p>
     </div>
   </div>
 
@@ -176,8 +183,6 @@
   <div id="out" class="output">
     <p class="muted">Ready. Click <strong>Generate Full Starter</strong>.</p>
   </div>
-
-  <div id="incidentBox" class="incidentBox" style="display:none;"></div>
 
   <div class="logbox">
     <div class="section-title" style="margin-bottom:10px;">
@@ -198,12 +203,12 @@
 
 <script>
 (function(){
-  const STORAGE = "woehammer_stormcast_story_v11";
+  // IMPORTANT: keep a stable storage key so saved characters don’t “vanish”
+  const STORAGE = "woehammer_stormcast_story_v12_full";
   const pick = a => a[Math.floor(Math.random()*a.length)];
   const roll = n => Math.floor(Math.random()*n)+1;
   const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
 
-  // weighted pick utility
   function weightedPick(items, weightFn){
     let total = 0;
     const weights = items.map(it => {
@@ -212,7 +217,6 @@
       return w;
     });
     if(total <= 0) return pick(items);
-
     let r = Math.random() * total;
     for(let i=0;i<items.length;i++){
       r -= weights[i];
@@ -229,8 +233,6 @@
   if(typeof state.reputation !== "number") state.reputation = 5;
   if(typeof state.crisis !== "boolean") state.crisis = false;
   if(typeof state.renownedTriggered !== "boolean") state.renownedTriggered = false;
-
-  // NEW: incident frequency
   if(typeof state.incidentMode !== "string") state.incidentMode = "optional"; // optional | always | never
 
   const save = () => localStorage.setItem(STORAGE, JSON.stringify(state));
@@ -238,8 +240,8 @@
 
   const realms = ["Aqshy","Ghyran","Shyish","Ghur","Chamon","Ulgu"];
 
-  const firstNames = ["Aster","Lyra","Kaelis","Brannic","Seraphine","Garran","Odrin","Merek","Siora","Eamon","Vexan","Thane"];
-  const lastNames  = ["Valorn","Dawnward","Stormvein","Goldsign","Halospear","Ironlight","Truthbrand","Ashward","Skywrath","Steelward","Windstride","Brightfall"];
+  const firstNames = ["Aster","Lyra","Kaelis","Brannic","Seraphine","Garran","Odrin","Merek","Siora","Eamon","Vexan","Thane","Rydan","Elara","Cassian","Orien","Kora","Damaris","Sevrin","Marrec"];
+  const lastNames  = ["Valorn","Dawnward","Stormvein","Goldsign","Halospear","Ironlight","Truthbrand","Ashward","Skywrath","Steelward","Windstride","Brightfall","Sunmantle","Vigilant","Lightbearer","Stormcrown","Aethermark","Gilded","Hearthward","Sigilguard"];
 
   const backgrounds = [
     {k:"reforged",l:"Many-Times Reforged (Memories Fraying)"},
@@ -256,32 +258,44 @@
     Incursion:[
       "A sudden assault strikes an area you previously thought secure. You must muster quickly, march your force, and drive the attackers back before they slip away with whatever they came for.",
       "Raiders appear from hidden routes at dusk, striking supply wagons and outposts. If you don’t respond immediately, your campaign will starve before it truly begins.",
-      "Enemy scouts and light troops push into your territory, testing your response. Break them now or they’ll map every weakness you have."
+      "Enemy scouts and light troops push into your territory, testing your response. Break them now or they’ll map every weakness you have.",
+      "Pickets vanish overnight. Smoke rises from a hamlet that swore it was loyal. Something is probing your lines — and it’s learning fast.",
+      "A covert landing or sudden portal-surge brings enemies into your rear. You have one chance to contain it before panic spreads."
     ],
     Pursuit:[
       "The enemy is falling back, wounded but dangerous. You can let them escape and regroup… or you can chase them down and finish the fight on your terms.",
       "A rearguard buys time with brutal efficiency. Every mile you gain costs blood — but if you relent, the enemy will be gone by morning.",
-      "You catch glimpses of fleeing banners through smoke and rain. If you can force a battle before they reach safety, you might end this quickly."
+      "You catch glimpses of fleeing banners through smoke and rain. If you can force a battle before they reach safety, you might end this quickly.",
+      "The foe retreats into broken ground. Speed wins, but reckless haste will hand them an ambush.",
+      "You press them through night and storm. When the fight comes, it will be desperate and close."
     ],
     Defence:[
       "You are forced to hold ground against pressure. If your line breaks, everything behind it becomes vulnerable.",
       "A key position must be defended — bridge, shrine, road, or gate. The enemy knows it too, and they are coming in strength.",
-      "You take shelter in contested ground and prepare to weather the storm. Survival is victory enough — for now."
+      "You take shelter in contested ground and prepare to weather the storm. Survival is victory enough — for now.",
+      "A refugee column chokes the road behind your lines. You must hold long enough to get them through.",
+      "Your allies’ morale buckles. If you can’t anchor the field, the whole front will collapse."
     ],
     Assault:[
       "You march to strike a hardened enemy position. This won’t be a skirmish — it’s a deliberate blow meant to break them.",
       "A fortified point blocks your progress. You must smash it open before the campaign stalls.",
-      "You choose the battlefield and attack with purpose. The enemy will remember this day."
+      "You choose the battlefield and attack with purpose. The enemy will remember this day.",
+      "The foe has overextended. A swift hammerblow now could shatter their momentum.",
+      "Your scouts find the enemy’s supply hub. Destroy it, and the war changes pace."
     ],
     Escalation:[
       "The conflict widens and restraint dies. Reinforcements arrive, strongpoints are seized, and the war becomes impossible to ignore.",
       "Positions harden into front lines. Both sides commit fully — supplies, morale, and reputations are on the line.",
-      "What began as skirmishes becomes open warfare. Strike hard now, or you’ll be fighting a stronger enemy later."
+      "What began as skirmishes becomes open warfare. Strike hard now, or you’ll be fighting a stronger enemy later.",
+      "A neighbouring power takes notice and intervenes. Now every action has consequences beyond the battlefield.",
+      "The enemy brings heavier forces. If you don’t match them, you’ll be ground down."
     ],
     Revelation:[
       "Victory may uncover something you weren’t meant to find — a truth, a relic, or a betrayal. Now you fight to control what is known.",
       "Evidence suggests the enemy was never acting alone. Your next battle is against soldiers — and the hidden hand behind them.",
-      "A pattern becomes undeniable. The war is part of something older and darker than you knew."
+      "A pattern becomes undeniable. The war is part of something older and darker than you knew.",
+      "You find proof that a trusted ally has been compromised. To act openly risks civil conflict — but to stay silent risks ruin.",
+      "A relic, map, prisoner, or omen points to a hidden site. Whoever holds it shapes the next chapter."
     ]
   };
 
@@ -289,14 +303,41 @@
     base:[
       "Mortals look to you as a myth made real — and expect miracles.",
       "Orders from Azyr conflict with reality on the ground.",
-      "A memory surfaces that should not exist."
+      "A memory surfaces that should not exist.",
+      "A chamber-astrolabe in your camp ticks backwards for an hour, then shatters.",
+      "Azyrite scribes ask for names of the fallen. You hesitate longer than you should.",
+      "Your wargear hums with distant thunder — as if answering a call you cannot hear."
     ],
-    reforged:["You forget a name that once mattered more than victory."],
-    new:["Immortality settles in — heavier than expected."],
-    redeemer:["A plea for protection arrives at the worst possible moment."],
-    slayer:["You glimpse a sign that your quarry is close — and it makes you reckless."],
-    judge:["Corruption is found among allies. Justice will fracture trust."],
-    prophet:["A dream leaves you certain of the next battlefield… and afraid of it."]
+    reforged:[
+      "You see a face in the crowd that died centuries ago… and it looks back.",
+      "A name catches in your throat. You know it’s important. You cannot remember why.",
+      "Your hands move through an old ritual you never learned… except you did."
+    ],
+    new:[
+      "Immortality settles in — heavier than expected.",
+      "You feel the storm within you flare at a mortal’s simple kindness.",
+      "You realise you don’t know how to go home — not truly."
+    ],
+    redeemer:[
+      "A plea for protection arrives at the worst possible moment.",
+      "Children tie crude lightning-charms to your cloak. You don’t remove them.",
+      "A village priest asks if Sigmar still listens. You answer too honestly."
+    ],
+    slayer:[
+      "You glimpse a sign that your quarry is close — and it makes you reckless.",
+      "A weapon-mark matches the one you hunt. The trail is warm.",
+      "A dying foe whispers the name you’ve sworn to end."
+    ],
+    judge:[
+      "Corruption is found among allies. Justice will fracture trust.",
+      "A confession arrives… and it’s politically inconvenient.",
+      "You catch yourself smiling at the thought of punishment. That worries you."
+    ],
+    prophet:[
+      "A dream leaves you certain of the next battlefield… and afraid of it.",
+      "You wake with ash on your tongue and a map in your mind.",
+      "A ‘coincidence’ repeats three times. The pattern is screaming at you."
+    ]
   };
 
   const afterAction = {
@@ -327,6 +368,8 @@
   }
 
   function checkThresholds(){
+    state.reputation = clamp(state.reputation, -5, 15);
+
     if(state.reputation <= 0 && !state.crisis){
       state.crisis = true;
       state.log.push({ kind:"state", text:"Reputation has collapsed. Your authority is in question. You must win your next battle or risk removal from command.", ts: Date.now() });
@@ -335,17 +378,14 @@
       state.renownedTriggered = true;
       state.log.push({ kind:"state", text:"Your reputation has grown. Allies seek your leadership, and expectations rise with every order you give.", ts: Date.now() });
     }
-    state.reputation = clamp(state.reputation, -5, 15);
   }
 
-  // =========================
-  // INCIDENTS (same pool as v10)
-  // + NEW: optional weights per background key
-  // weights: { reforged: 3, prophet: 1, ... }  (higher = more likely for that background)
-  // =========================
+  // ---------- INCIDENT TABLES ----------
+  // Each incident: title, prompt, optional weights{bgKey: bonus}, choices[3]
+  // choices: { text, repDelta, nextMission, outcome }
   const incidents = {
     standard: [
-      // Weighted examples
+      // Background-tilted starters
       { title:"Reforging Echo",
         prompt:"During reforging rites, a memory resurfaces — something you should not remember.",
         weights:{ reforged:4, prophet:1 },
@@ -359,11 +399,11 @@
         weights:{ redeemer:3 },
         choices:[
           { text:"Redeploy immediately to aid them", repDelta:+1, nextMission:"Defence", outcome:"You divert at once. The mortals see your banners and dare to hope." },
-          { text:"Promise aid once current objectives are secured", repDelta:0, nextMission:"Incursion", outcome:"You send reassurance and press on — but danger doesn’t wait politely." },
+          { text:"Promise aid once objectives are secured", repDelta:0, nextMission:"Incursion", outcome:"You send reassurance and press on — but danger doesn’t wait politely." },
           { text:"Refuse — the war effort takes priority", repDelta:-1, nextMission:"Pursuit", outcome:"You deny the request. Word spreads quickly — and not kindly." }
         ]},
       { title:"Captured Enemy Officer",
-        prompt:"An enemy officer is taken alive during a skirmish.",
+        prompt:"An enemy officer is taken alive after a sharp skirmish.",
         weights:{ judge:2, prophet:1 },
         choices:[
           { text:"Interrogate them thoroughly", repDelta:0, nextMission:"Revelation", outcome:"Under pressure, they reveal fragments of a larger design." },
@@ -384,78 +424,495 @@
         choices:[
           { text:"Hunt it down immediately", repDelta:0, nextMission:"Pursuit", outcome:"You commit to the chase. There will be no half-measures." },
           { text:"Fortify and prepare for its attack", repDelta:+1, nextMission:"Defence", outcome:"You ready the field. If they come, they’ll come into your teeth." },
-          { text:"Strike somewhere else to avoid it", repDelta:-1, nextMission:"Assault", outcome:"You bypass it. Some see prudence; others see fear." }
+          { text:"Strike elsewhere to avoid it", repDelta:-1, nextMission:"Assault", outcome:"You bypass it. Some see prudence; others see fear." }
         ]},
       { title:"Corruption Unmasked",
-        prompt:"Evidence of corruption appears among allies — small, subtle, and spreading.",
+        prompt:"Evidence of corruption appears among allies — subtle, spreading, and hard to prove.",
         weights:{ judge:4, prophet:1 },
         choices:[
           { text:"Purge it immediately", repDelta:0, nextMission:"Assault", outcome:"You act without hesitation. The message is clear: no rot survives." },
-          { text:"Investigate quietly and gather proof", repDelta:+1, nextMission:"Revelation", outcome:"You build a case. The truth is uglier than you expected." },
+          { text:"Investigate quietly and gather proof", repDelta:+1, nextMission:"Revelation", outcome:"You build a case. The truth is uglier than expected." },
           { text:"Ignore it — the war comes first", repDelta:-1, nextMission:"Escalation", outcome:"You postpone judgement. The rot grows in the dark." }
         ]},
 
-      // Non-weighted: keep the rest “as is” (a big pool stays varied)
+      // Big pool (50+). Keep these varied and short so it doesn’t get samey.
       { title:"Rival Stormcast",
-        prompt:"Another Stormcast commander publicly questions one of your recent decisions.",
+        prompt:"Another commander questions one of your decisions in front of the host.",
         choices:[
-          { text:"Confront them openly before the host", repDelta:0, nextMission:"Assault", outcome:"You meet challenge with certainty. The next battle will prove who was right." },
-          { text:"Resolve the matter privately", repDelta:+1, nextMission:"Incursion", outcome:"Quiet words, measured tone. Unity holds — barely — and you march again." },
-          { text:"Ignore the slight and move on", repDelta:-1, nextMission:"Defence", outcome:"Silence reads as weakness to some. Your next stand will be watched closely." }
+          { text:"Confront them openly", repDelta:0, nextMission:"Assault", outcome:"You meet challenge with certainty. The next battle will prove who is right." },
+          { text:"Settle it privately", repDelta:+1, nextMission:"Incursion", outcome:"Quiet words, measured tone. Unity holds — barely — and you march again." },
+          { text:"Ignore it", repDelta:-1, nextMission:"Defence", outcome:"Silence reads as weakness to some. Your next stand will be watched closely." }
         ]},
       { title:"Enemy Survivors",
         prompt:"Scouts report enemy survivors regrouping after the last engagement.",
         choices:[
           { text:"Pursue them relentlessly", repDelta:0, nextMission:"Pursuit", outcome:"You refuse to let them breathe. The hunt begins." },
-          { text:"Fortify and deny them targets", repDelta:+1, nextMission:"Defence", outcome:"You harden your position and force them to come to you." },
-          { text:"Ignore them and push forward elsewhere", repDelta:-1, nextMission:"Escalation", outcome:"You move on. The enemy grows bolder behind you, and the war widens." }
+          { text:"Fortify and deny targets", repDelta:+1, nextMission:"Defence", outcome:"You harden your position and force them to come to you." },
+          { text:"Ignore them, push elsewhere", repDelta:-1, nextMission:"Escalation", outcome:"You move on. The enemy grows bolder behind you." }
         ]},
       { title:"Sigmar’s Omen",
-        prompt:"A violent storm breaks unnaturally over your camp the night before marching.",
+        prompt:"An unnatural storm breaks over your camp the night before marching.",
         weights:{ prophet:1, new:1 },
         choices:[
           { text:"Declare it a sign of favour", repDelta:+1, nextMission:"Assault", outcome:"You raise your voice and the host listens. Tomorrow, you strike." },
-          { text:"Treat it as coincidence", repDelta:0, nextMission:"Incursion", outcome:"You keep your counsel. The enemy will not be impressed by weather." },
-          { text:"Publicly dismiss such superstition", repDelta:-1, nextMission:"Defence", outcome:"Some bristle. You feel morale stiffen — not in a good way." }
+          { text:"Treat it as coincidence", repDelta:0, nextMission:"Incursion", outcome:"You keep your counsel. The enemy won’t be impressed by weather." },
+          { text:"Dismiss it as superstition", repDelta:-1, nextMission:"Defence", outcome:"Some bristle. Morale stiffens — not in a good way." }
+        ]},
+      { title:"Broken Bridge",
+        prompt:"A key crossing is destroyed. The detour will cost days.",
+        choices:[
+          { text:"Force a crossing anyway", repDelta:0, nextMission:"Assault", outcome:"You gamble on speed. It will be bloody, but decisive." },
+          { text:"Hold and build a replacement", repDelta:+1, nextMission:"Defence", outcome:"You secure the area and rebuild. Slow — but controlled." },
+          { text:"Take the long way around", repDelta:-1, nextMission:"Pursuit", outcome:"You lose momentum. The enemy gains room to breathe." }
+        ]},
+      { title:"Azyrite Envoy",
+        prompt:"An envoy arrives with advice that feels political rather than practical.",
+        choices:[
+          { text:"Follow the envoy’s guidance", repDelta:0, nextMission:"Escalation", outcome:"You comply. The war widens, and you inherit new obligations." },
+          { text:"Listen, then choose your own course", repDelta:+1, nextMission:"Incursion", outcome:"You show respect — and independence. Results will speak." },
+          { text:"Dismiss them outright", repDelta:-1, nextMission:"Defence", outcome:"You gain freedom — and make enemies in Azyr." }
+        ]},
+      { title:"Supply Wagons",
+        prompt:"Your supply line is threatened by raids and sabotage.",
+        choices:[
+          { text:"Set a trap and strike the raiders", repDelta:+1, nextMission:"Incursion", outcome:"You lure them in and smash them. The road feels safer — for now." },
+          { text:"Escort the wagons personally", repDelta:0, nextMission:"Defence", outcome:"You protect what matters. The campaign slows but steadies." },
+          { text:"Press on without supplies", repDelta:-1, nextMission:"Assault", outcome:"You gamble on victory over logistics. Hunger will collect its due." }
+        ]},
+      { title:"Refugee Column",
+        prompt:"A river of refugees clogs the road behind your lines.",
+        choices:[
+          { text:"Guard them through the danger", repDelta:+1, nextMission:"Defence", outcome:"The mortals survive. They will remember your banners." },
+          { text:"Redirect them to a safer route", repDelta:0, nextMission:"Incursion", outcome:"You improvise. Some are saved, some vanish into the wilds." },
+          { text:"Order them off the road", repDelta:-1, nextMission:"Pursuit", outcome:"You clear the path — and seed bitterness behind you." }
+        ]},
+      { title:"Whispered Heresy",
+        prompt:"A priest claims Sigmar has ‘abandoned’ this region. Panic flickers.",
+        choices:[
+          { text:"Address the host and mortals together", repDelta:+1, nextMission:"Defence", outcome:"Your words steady hands. Faith hardens into resolve." },
+          { text:"Have the priest questioned", repDelta:0, nextMission:"Revelation", outcome:"The source of the rumour… is not mortal." },
+          { text:"Make an example of them", repDelta:-1, nextMission:"Assault", outcome:"Order returns — but at a cost. Fear is a poor cement." }
+        ]},
+      { title:"Bitter Ally",
+        prompt:"A local ally resents Stormcast authority and undermines your orders.",
+        choices:[
+          { text:"Offer them a share of glory", repDelta:+1, nextMission:"Assault", outcome:"Their pride is soothed. They commit fully to the next strike." },
+          { text:"Keep them at arm’s length", repDelta:0, nextMission:"Defence", outcome:"You limit risk. Cooperation becomes cold and transactional." },
+          { text:"Replace their leadership", repDelta:-1, nextMission:"Escalation", outcome:"You take control. The region’s politics erupt." }
+        ]},
+      { title:"Enemy Messenger",
+        prompt:"A lone messenger offers terms — or a distraction.",
+        choices:[
+          { text:"Hear them out", repDelta:0, nextMission:"Revelation", outcome:"You learn something useful. Whether it’s true is another matter." },
+          { text:"Use them to feed false information", repDelta:+1, nextMission:"Incursion", outcome:"You plant bait. The enemy bites — exactly where you want." },
+          { text:"Execute the messenger", repDelta:-1, nextMission:"Pursuit", outcome:"You refuse the game. The enemy plays anyway." }
+        ]},
+      { title:"Night Watch",
+        prompt:"Your pickets report shapes moving beyond torchlight. The darkness feels… alive.",
+        choices:[
+          { text:"Launch a probing attack", repDelta:0, nextMission:"Incursion", outcome:"You push into the night. The enemy wasn’t expecting courage." },
+          { text:"Fortify and wait for dawn", repDelta:+1, nextMission:"Defence", outcome:"You deny the night its prey. Dawn brings certainty." },
+          { text:"Move camp immediately", repDelta:-1, nextMission:"Pursuit", outcome:"You withdraw. The host whispers the word ‘fear’." }
+        ]},
+      { title:"Lightning Scar",
+        prompt:"A bolt strikes near your command tent, leaving a rune-burned scar in the earth.",
+        weights:{ prophet:2, reforged:1 },
+        choices:[
+          { text:"Interpret it as a warning", repDelta:+1, nextMission:"Revelation", outcome:"You follow the sign and discover something hidden nearby." },
+          { text:"Treat it as random", repDelta:0, nextMission:"Incursion", outcome:"You shrug and march. The rune remains behind like an accusation." },
+          { text:"Declare it a blessing and attack", repDelta:-1, nextMission:"Assault", outcome:"You hype the host — perhaps too much. Expectations spike." }
+        ]},
+      { title:"Border Skirmish",
+        prompt:"A neutral force clashes with your scouts. They claim you trespass.",
+        choices:[
+          { text:"Apologise and withdraw", repDelta:+1, nextMission:"Defence", outcome:"You avoid a wider mess. Diplomacy buys breathing room." },
+          { text:"Stand your ground and negotiate", repDelta:0, nextMission:"Revelation", outcome:"You talk with steel close at hand. You learn what they truly fear." },
+          { text:"Drive them off", repDelta:-1, nextMission:"Escalation", outcome:"You win the moment and start a new front." }
+        ]},
+      { title:"A Lost Patrol",
+        prompt:"A patrol is missing. Their last signal ended mid-sentence.",
+        choices:[
+          { text:"Search immediately", repDelta:+1, nextMission:"Incursion", outcome:"You find them — or what’s left — and the trail points outward." },
+          { text:"Hold and investigate carefully", repDelta:0, nextMission:"Revelation", outcome:"Evidence suggests the enemy is testing your reactions." },
+          { text:"Ignore it and push the main plan", repDelta:-1, nextMission:"Assault", outcome:"You press on. The missing become a rumour that sours morale." }
+        ]},
+      { title:"Munitions Shortage",
+        prompt:"Your mortal allies report dwindling ammunition and supplies.",
+        choices:[
+          { text:"Pause to secure resupply", repDelta:+1, nextMission:"Defence", outcome:"You stabilise the situation. The next battle is fought properly equipped." },
+          { text:"Raid the enemy stores", repDelta:0, nextMission:"Assault", outcome:"You hit their logistics. It’s risky — and effective." },
+          { text:"Press on regardless", repDelta:-1, nextMission:"Escalation", outcome:"You gamble on fury. The campaign pays in blood." }
+        ]},
+      { title:"Unwanted Idol",
+        prompt:"Your troops find a strange idol. It ‘feels’ wrong even through gauntlets.",
+        weights:{ judge:2, prophet:2 },
+        choices:[
+          { text:"Destroy it publicly", repDelta:+1, nextMission:"Assault", outcome:"You shatter it. The host cheers. Something screams without a mouth." },
+          { text:"Secure it for study", repDelta:0, nextMission:"Revelation", outcome:"Knowledge is dangerous — but ignorance is worse." },
+          { text:"Hide it and move on", repDelta:-1, nextMission:"Incursion", outcome:"You bury it. Later, it is found somewhere else." }
+        ]},
+      { title:"Stormhost Pride",
+        prompt:"Your warriors argue over doctrine and pride — a Stormhost split in miniature.",
+        choices:[
+          { text:"Enforce unity with strict orders", repDelta:0, nextMission:"Defence", outcome:"You impose discipline. It holds — but feels brittle." },
+          { text:"Let captains prove themselves in battle", repDelta:+1, nextMission:"Assault", outcome:"You channel pride into purpose. The next strike will be fierce." },
+          { text:"Refuse the dispute and walk away", repDelta:-1, nextMission:"Pursuit", outcome:"The issue festers. You feel it in every delayed response." }
+        ]},
+      { title:"A Mortal Champion",
+        prompt:"A mortal hero offers to lead a risky mission in your name.",
+        choices:[
+          { text:"Accept and support them", repDelta:+1, nextMission:"Incursion", outcome:"The mortals see partnership — not dominance." },
+          { text:"Let them go alone", repDelta:0, nextMission:"Revelation", outcome:"They return with knowledge… and wounds that don’t make sense." },
+          { text:"Refuse and do it yourself", repDelta:-1, nextMission:"Assault", outcome:"You deny them glory. Some resent you for it." }
+        ]},
+      { title:"Enemy Fortifications",
+        prompt:"Scouts report the enemy is building hardpoints and trenches.",
+        choices:[
+          { text:"Strike before they finish", repDelta:0, nextMission:"Assault", outcome:"You attack early. Speed matters more than perfection." },
+          { text:"Prepare a defensive answer", repDelta:+1, nextMission:"Defence", outcome:"You match them methodically. The war becomes positional." },
+          { text:"Outflank and ignore them", repDelta:-1, nextMission:"Pursuit", outcome:"You bypass their wall — and leave a dagger at your back." }
+        ]},
+      { title:"The Wrong Dead",
+        prompt:"Bodies on the field wear the wrong insignia — not the enemy you expected.",
+        choices:[
+          { text:"Investigate immediately", repDelta:+1, nextMission:"Revelation", outcome:"The trail points to a hidden player." },
+          { text:"Assume confusion and carry on", repDelta:0, nextMission:"Escalation", outcome:"You press on. Confusion becomes chaos later." },
+          { text:"Suppress the news", repDelta:-1, nextMission:"Defence", outcome:"You control panic — and sacrifice truth." }
+        ]},
+      { title:"Broken Vows",
+        prompt:"A local ally breaks a promise and abandons a watchpost.",
+        choices:[
+          { text:"Forgive — you need them", repDelta:+1, nextMission:"Defence", outcome:"You keep the coalition intact. Trust is wounded, not dead." },
+          { text:"Demand restitution", repDelta:0, nextMission:"Incursion", outcome:"They comply reluctantly. Cooperation becomes tense." },
+          { text:"Punish them publicly", repDelta:-1, nextMission:"Escalation", outcome:"You restore order — and spark resentment." }
+        ]},
+      { title:"Surprise Reinforcements",
+        prompt:"Unexpected reinforcements arrive — eager, untested, and looking to you.",
+        choices:[
+          { text:"Deploy them carefully", repDelta:+1, nextMission:"Defence", outcome:"You build a stable line. Their confidence grows." },
+          { text:"Throw them into the next strike", repDelta:0, nextMission:"Assault", outcome:"They learn fast. Some don’t learn long." },
+          { text:"Send them elsewhere", repDelta:-1, nextMission:"Pursuit", outcome:"You lose strength on the main front. Others take the credit." }
+        ]},
+      { title:"A Strange Silence",
+        prompt:"For a full day, no enemy signs appear. Too quiet.",
+        choices:[
+          { text:"Probe forward cautiously", repDelta:+1, nextMission:"Incursion", outcome:"You find the trap’s outline and refuse it." },
+          { text:"Fortify and wait", repDelta:0, nextMission:"Defence", outcome:"You deny the enemy initiative. The fight comes on your terms." },
+          { text:"March at full speed", repDelta:-1, nextMission:"Pursuit", outcome:"You rush into the unknown. It rushes back." }
+        ]},
+      { title:"Azyrite Scholar",
+        prompt:"A scholar insists a local site is ‘key’ to the war — but won’t say why.",
+        choices:[
+          { text:"Escort them to the site", repDelta:+1, nextMission:"Revelation", outcome:"The place matters. The scholar was not wrong — just scared." },
+          { text:"Send guards and stay focused", repDelta:0, nextMission:"Incursion", outcome:"You split attention. It works… barely." },
+          { text:"Refuse and press on", repDelta:-1, nextMission:"Assault", outcome:"You choose war over mystery. Mysteries rarely accept no." }
+        ]},
+      { title:"The Quarry’s Sign",
+        prompt:"You find a mark matching a foe you’ve sworn to hunt.",
+        weights:{ slayer:3 },
+        choices:[
+          { text:"Chase the sign immediately", repDelta:0, nextMission:"Pursuit", outcome:"You follow the trail. It pulls you toward a confrontation." },
+          { text:"Set an ambush and wait", repDelta:+1, nextMission:"Defence", outcome:"You turn the hunt into a trap. Patience becomes a weapon." },
+          { text:"Ignore it and hit the main enemy", repDelta:-1, nextMission:"Assault", outcome:"You deny obsession — but it denies you peace." }
+        ]},
+      { title:"Unsteady Captain",
+        prompt:"A mortal captain under your command is losing nerve.",
+        choices:[
+          { text:"Inspire them personally", repDelta:+1, nextMission:"Defence", outcome:"They rally. Your presence is a storm-wall behind their spine." },
+          { text:"Replace them quietly", repDelta:0, nextMission:"Incursion", outcome:"You avoid a scene. The unit stabilises." },
+          { text:"Publicly shame them", repDelta:-1, nextMission:"Escalation", outcome:"Fear spreads faster than courage." }
+        ]},
+      { title:"Hostile Terrain",
+        prompt:"The land itself fights you — choking mists, razor winds, bitter rain.",
+        choices:[
+          { text:"Slow down and secure routes", repDelta:+1, nextMission:"Defence", outcome:"You reduce losses. Time is the price." },
+          { text:"Push through anyway", repDelta:0, nextMission:"Pursuit", outcome:"You keep pressure, but your troops pay the toll." },
+          { text:"Detour to easier ground", repDelta:-1, nextMission:"Incursion", outcome:"You stay safe — and lose initiative." }
+        ]},
+      { title:"Secret Meeting",
+        prompt:"Scouts report a covert enemy meeting at an abandoned shrine.",
+        choices:[
+          { text:"Strike it immediately", repDelta:0, nextMission:"Incursion", outcome:"You crash the gathering. You don’t catch them all — but you learn enough." },
+          { text:"Watch and gather evidence", repDelta:+1, nextMission:"Revelation", outcome:"You identify leaders and patterns. The next battle will be targeted." },
+          { text:"Ignore — it’s a trap", repDelta:-1, nextMission:"Defence", outcome:"Maybe it was. Maybe it wasn’t. Now you’ll never know." }
+        ]},
+      { title:"Enemy Provocation",
+        prompt:"The enemy defiles a symbol of Sigmar within sight of your camp.",
+        choices:[
+          { text:"Respond with immediate violence", repDelta:0, nextMission:"Assault", outcome:"You smash them. The host feels better — and hungrier." },
+          { text:"Hold discipline, choose the ground", repDelta:+1, nextMission:"Defence", outcome:"You refuse the bait. Your restraint becomes a weapon." },
+          { text:"Send mortals to handle it", repDelta:-1, nextMission:"Incursion", outcome:"It keeps you safe — and makes you look distant." }
+        ]},
+      { title:"A Sudden Betrayal",
+        prompt:"A guide or informant feeds you false routes. You realise mid-march.",
+        choices:[
+          { text:"Reverse course and cut them off", repDelta:+1, nextMission:"Pursuit", outcome:"You pivot sharply. The enemy almost admires it." },
+          { text:"Accept it and improvise", repDelta:0, nextMission:"Incursion", outcome:"You adapt. The war becomes messy but survivable." },
+          { text:"Punish everyone involved", repDelta:-1, nextMission:"Escalation", outcome:"You restore fear-based order — and poison loyalty." }
+        ]},
+      { title:"Relic-Bound Field",
+        prompt:"The battlefield hums with ancient magic. Every step feels watched.",
+        weights:{ prophet:1, reforged:1, judge:1 },
+        choices:[
+          { text:"Secure the site and investigate", repDelta:+1, nextMission:"Revelation", outcome:"You find a clue that changes how you understand the war." },
+          { text:"Fight quickly and leave", repDelta:0, nextMission:"Incursion", outcome:"You keep it practical. The site stays… unresolved." },
+          { text:"Seal it and forbid entry", repDelta:-1, nextMission:"Defence", outcome:"You control danger — and lock away potential answers." }
+        ]},
+      { title:"Enemy Supplies Spotted",
+        prompt:"You discover a poorly guarded enemy supply cache.",
+        choices:[
+          { text:"Raid it immediately", repDelta:+1, nextMission:"Assault", outcome:"You burn their stores. Their next battle will be hungrier." },
+          { text:"Set a trap and wait", repDelta:0, nextMission:"Defence", outcome:"You turn their greed into your advantage." },
+          { text:"Mark it and move on", repDelta:-1, nextMission:"Pursuit", outcome:"You pass it by. Later you wish you hadn’t." }
+        ]},
+      { title:"False Flag",
+        prompt:"An attack is staged to look like another faction. It’s meant to start a wider war.",
+        choices:[
+          { text:"Expose the deception", repDelta:+1, nextMission:"Revelation", outcome:"You reveal the truth before alliances fracture." },
+          { text:"Use the confusion to strike the enemy", repDelta:0, nextMission:"Assault", outcome:"You exploit the moment. Morality is messier than strategy." },
+          { text:"Let the rumour spread", repDelta:-1, nextMission:"Escalation", outcome:"You allow chaos to bloom. It blooms back." }
+        ]},
+      { title:"Stormvault Door",
+        prompt:"A sealed Stormvault door is found half-buried. It was not on any map.",
+        weights:{ prophet:2, judge:1 },
+        choices:[
+          { text:"Attempt to open it", repDelta:+1, nextMission:"Revelation", outcome:"The lock yields — and the contents change your priorities." },
+          { text:"Guard it and request orders", repDelta:0, nextMission:"Defence", outcome:"You secure the site. Time passes. The enemy notices." },
+          { text:"Seal it and move on", repDelta:-1, nextMission:"Incursion", outcome:"You choose war over secrets. Secrets rarely accept neglect." }
+        ]},
+      { title:"A Strange Ally",
+        prompt:"A mysterious figure offers help… with demands they won’t explain.",
+        choices:[
+          { text:"Accept cautiously", repDelta:0, nextMission:"Revelation", outcome:"You gain knowledge. You also gain doubt." },
+          { text:"Refuse and rely on your own", repDelta:+1, nextMission:"Defence", outcome:"You choose certainty over shortcuts. The host respects it." },
+          { text:"Use them as bait", repDelta:-1, nextMission:"Incursion", outcome:"It works. You feel worse than the enemy." }
+        ]},
+      { title:"Weather Turns",
+        prompt:"A sudden heatwave/freeze floods the region. Movement becomes hazardous.",
+        choices:[
+          { text:"Hold and secure shelter", repDelta:+1, nextMission:"Defence", outcome:"You protect the mortals. They’ll follow you anywhere now." },
+          { text:"Push the enemy while they suffer too", repDelta:0, nextMission:"Pursuit", outcome:"You keep pressure. Both sides bleed from the land." },
+          { text:"Abandon the area entirely", repDelta:-1, nextMission:"Escalation", outcome:"You relocate. Someone else takes your ground." }
+        ]},
+      { title:"Enemy Champion Challenges You",
+        prompt:"A champion issues a challenge meant to undermine your authority.",
+        choices:[
+          { text:"Accept publicly", repDelta:+1, nextMission:"Assault", outcome:"You meet them head-on. The host roars approval." },
+          { text:"Refuse and focus on strategy", repDelta:0, nextMission:"Defence", outcome:"You deny theatrics. Some call it wisdom; some call it fear." },
+          { text:"Send a subordinate", repDelta:-1, nextMission:"Incursion", outcome:"You avoid risk — and look distant." }
+        ]},
+      { title:"A Cold Realisation",
+        prompt:"A mortal thanks you. You can’t remember what gratitude used to feel like.",
+        weights:{ reforged:2, new:1 },
+        choices:[
+          { text:"Lean into the bond with mortals", repDelta:+1, nextMission:"Defence", outcome:"You anchor yourself in what you protect. It steadies you." },
+          { text:"Treat it as irrelevant", repDelta:0, nextMission:"Incursion", outcome:"You keep distance. Distance becomes habit." },
+          { text:"Reject it harshly", repDelta:-1, nextMission:"Assault", outcome:"You cut the thread. The host feels colder." }
         ]},
 
-      // --- The rest of your big incident pool ---
-      // NOTE: To keep this message readable, I’m not re-pasting every single v10 incident here.
-      // You have two choices:
-      //   A) Paste your existing v10 “incidents.standard/disgraced/renowned” arrays below this comment (unchanged)
-      //      and keep the weighting system I added.
-      //   B) Tell me “paste the whole pool” and I’ll dump the entire 57-incident code again in one go.
-      //
-      // Quick shortcut: copy the entire incidents object from your v10 file, replace it with this one,
-      // then paste the remaining incidents entries after this comment.
+      // Fillers to push variety beyond 50
+      { title:"Enemy Map",
+        prompt:"A crude map is found on a corpse. It marks places you didn’t know mattered.",
+        choices:[
+          { text:"Follow the map immediately", repDelta:+1, nextMission:"Revelation", outcome:"You find the marked site before the enemy can erase it." },
+          { text:"Cross-check with scouts", repDelta:0, nextMission:"Incursion", outcome:"You verify before committing. The enemy stays active." },
+          { text:"Ignore it as bait", repDelta:-1, nextMission:"Defence", outcome:"Maybe it was bait. Maybe it was your only clue." }
+        ]},
+      { title:"Tainted Water",
+        prompt:"Local wells are poisoned. Mortals grow weak and fearful.",
+        choices:[
+          { text:"Secure clean water and hold", repDelta:+1, nextMission:"Defence", outcome:"You stabilise the region. Trust rises with health." },
+          { text:"Hunt the poisoners", repDelta:0, nextMission:"Pursuit", outcome:"You chase them through scrub and ruin. You’ll catch them eventually." },
+          { text:"Leave it for locals to solve", repDelta:-1, nextMission:"Escalation", outcome:"A small horror becomes a bigger one." }
+        ]},
+      { title:"Screams in the Fog",
+        prompt:"At dawn, screams echo from the fog beyond your perimeter. No bodies are found.",
+        choices:[
+          { text:"Probe with a fast strike", repDelta:0, nextMission:"Incursion", outcome:"You push into the mist. Something pushes back." },
+          { text:"Hold firm and tighten watches", repDelta:+1, nextMission:"Defence", outcome:"You deny the fear its feast. The host steadies." },
+          { text:"Advance at full speed to end it", repDelta:-1, nextMission:"Assault", outcome:"You rush forward. The fog swallows your confidence." }
+        ]},
+      { title:"A Funeral Pyre",
+        prompt:"Mortals ask you to honour their dead with a proper rite.",
+        choices:[
+          { text:"Attend and speak", repDelta:+1, nextMission:"Defence", outcome:"Your presence becomes a shield. The living stand straighter." },
+          { text:"Send a representative", repDelta:0, nextMission:"Incursion", outcome:"You respect them… from a distance." },
+          { text:"Refuse — war waits", repDelta:-1, nextMission:"Pursuit", outcome:"You march. Behind you, grief curdles into anger." }
+        ]},
+      { title:"Caged Lightning",
+        prompt:"A device hums with storm-energy. Someone has learned to trap your power.",
+        choices:[
+          { text:"Destroy it now", repDelta:+1, nextMission:"Assault", outcome:"You crush the device. The air tastes cleaner." },
+          { text:"Study it for clues", repDelta:0, nextMission:"Revelation", outcome:"It reveals methods — and an enemy mind at work." },
+          { text:"Hide it and move on", repDelta:-1, nextMission:"Incursion", outcome:"It won’t stay hidden. It never does." }
+        ]},
+      { title:"An Arrow of Gold",
+        prompt:"A single golden arrow is delivered with no message. It points west.",
+        weights:{ prophet:2 },
+        choices:[
+          { text:"Follow the sign", repDelta:+1, nextMission:"Revelation", outcome:"You find the origin — and the reason it was sent." },
+          { text:"Send scouts only", repDelta:0, nextMission:"Incursion", outcome:"You hedge your bets. The war keeps moving." },
+          { text:"Ignore it as nonsense", repDelta:-1, nextMission:"Escalation", outcome:"The ‘nonsense’ becomes a problem later." }
+        ]},
+      { title:"Banner-Repair",
+        prompt:"Your banner is torn. Mortals insist it’s a bad omen unless repaired before the next clash.",
+        choices:[
+          { text:"Let the mortals repair it", repDelta:+1, nextMission:"Defence", outcome:"They stitch hope into cloth. It matters more than it should." },
+          { text:"Repair it yourself in silence", repDelta:0, nextMission:"Incursion", outcome:"You do the work. The host notices." },
+          { text:"Refuse and march", repDelta:-1, nextMission:"Pursuit", outcome:"You reject superstition. Morale disagrees." }
+        ]},
+      { title:"Enemy Prisoners Beg",
+        prompt:"Prisoners beg for mercy, claiming they were coerced.",
+        weights:{ judge:2, redeemer:1 },
+        choices:[
+          { text:"Offer clemency with conditions", repDelta:+1, nextMission:"Revelation", outcome:"One tells you something valuable in gratitude — or fear." },
+          { text:"Imprison and move on", repDelta:0, nextMission:"Defence", outcome:"You keep order. Mercy becomes paperwork." },
+          { text:"Execute them", repDelta:-1, nextMission:"Assault", outcome:"Fear spreads. It works — until it doesn’t." }
+        ]},
+      { title:"A Missing Relic",
+        prompt:"A Stormcast relic is missing from your vault. Someone close had access.",
+        choices:[
+          { text:"Investigate quietly", repDelta:+1, nextMission:"Revelation", outcome:"You uncover a chain of secrets — and a weak link." },
+          { text:"Lock everything down", repDelta:0, nextMission:"Defence", outcome:"You tighten control. The host resents the suspicion." },
+          { text:"Ignore it — focus on war", repDelta:-1, nextMission:"Escalation", outcome:"The relic resurfaces… in enemy hands." }
+        ]},
+      { title:"A Signal Fire",
+        prompt:"A distant signal fire burns — not yours. Someone calls for help or war.",
+        choices:[
+          { text:"Go to them", repDelta:+1, nextMission:"Incursion", outcome:"You respond. The world feels slightly less cruel." },
+          { text:"Send aid, keep marching", repDelta:0, nextMission:"Defence", outcome:"You split resources. It might be enough." },
+          { text:"Ignore it", repDelta:-1, nextMission:"Pursuit", outcome:"You choose efficiency. The world chooses consequences." }
+        ]},
+      { title:"Enemy Wardstones",
+        prompt:"Wardstones appear along the road. They dampen the air and make prayers feel thin.",
+        weights:{ prophet:1, judge:1 },
+        choices:[
+          { text:"Smash them and push on", repDelta:+1, nextMission:"Assault", outcome:"You break the stones. The air ‘breathes’ again." },
+          { text:"Study them and trace their source", repDelta:0, nextMission:"Revelation", outcome:"The stones point to a larger ritual." },
+          { text:"Avoid them entirely", repDelta:-1, nextMission:"Defence", outcome:"You reroute. The enemy controls your movement." }
+        ]},
     ],
+
     disgraced: [
-      { title:"Silent Orders",
-        prompt:"Orders arrive from Azyr — vague, delayed, and lacking authority. You feel the absence like a weight.",
-        weights:{ reforged:1, judge:1 },
+      { title:"Cold Reception",
+        prompt:"Allies meet you with forced smiles and guarded eyes. Your reputation precedes you.",
         choices:[
-          { text:"Hold position and await clarification", repDelta:+1, nextMission:"Defence", outcome:"You choose caution. Your host steadies, if nothing else." },
-          { text:"Act independently", repDelta:0, nextMission:"Assault", outcome:"You take the initiative. If this fails, it’s on your head." },
-          { text:"Withdraw from allied forces", repDelta:-1, nextMission:"Pursuit", outcome:"You move alone. The war doesn’t get easier — it just gets lonelier." }
+          { text:"Ask for a chance to prove yourself", repDelta:+1, nextMission:"Defence", outcome:"You swallow pride. They offer a fragile opportunity." },
+          { text:"Demand obedience", repDelta:0, nextMission:"Assault", outcome:"You force the issue. It will work — or explode." },
+          { text:"Withdraw and operate alone", repDelta:-1, nextMission:"Pursuit", outcome:"You go to ground. Alone is quieter… and harder." }
         ]},
-      // (Paste the rest of your disgraced pool from v10 here; weighting will apply automatically)
+      { title:"Orders Withheld",
+        prompt:"Azyr’s messages arrive late or incomplete. You are being ‘managed’.",
+        choices:[
+          { text:"Hold position and rebuild trust", repDelta:+1, nextMission:"Defence", outcome:"You stabilise the front and show reliability." },
+          { text:"Act decisively without permission", repDelta:0, nextMission:"Assault", outcome:"You seize initiative. It must succeed." },
+          { text:"Ignore Azyr entirely", repDelta:-1, nextMission:"Escalation", outcome:"You choose independence. Politics turns sharp." }
+        ]},
+      { title:"Rumours in the Ranks",
+        prompt:"Your mortals whisper that you are cursed — that Sigmar’s gaze has turned away.",
+        choices:[
+          { text:"Speak to them plainly", repDelta:+1, nextMission:"Defence", outcome:"You meet fear with truth. It steadies some." },
+          { text:"Crush the rumourmakers", repDelta:0, nextMission:"Assault", outcome:"You end the whispers. You also end trust." },
+          { text:"Ignore it", repDelta:-1, nextMission:"Incursion", outcome:"The rumour grows legs and runs ahead of you." }
+        ]},
+      { title:"Denied Supplies",
+        prompt:"Supplies are ‘misfiled’. Your host goes without what it needs.",
+        choices:[
+          { text:"Secure supplies by force", repDelta:0, nextMission:"Assault", outcome:"You take what you need. You make enemies doing it." },
+          { text:"Live lean and fight smart", repDelta:+1, nextMission:"Pursuit", outcome:"You adapt. Your discipline becomes a weapon." },
+          { text:"Retreat to resupply properly", repDelta:-1, nextMission:"Defence", outcome:"You fall back. The enemy advances." }
+        ]},
+      { title:"A ‘Replacement’ Arrives",
+        prompt:"A senior Stormcast arrives ‘to help’ — clearly to supervise you.",
+        choices:[
+          { text:"Welcome them and cooperate", repDelta:+1, nextMission:"Defence", outcome:"You swallow pride. The host becomes steadier." },
+          { text:"Compete with them openly", repDelta:0, nextMission:"Assault", outcome:"You turn the war into a proving ground." },
+          { text:"Undermine them quietly", repDelta:-1, nextMission:"Revelation", outcome:"You play politics. Politics plays back." }
+        ]},
+      { title:"Hostile Locals",
+        prompt:"Locals refuse shelter and spit at your standard. Your failures are remembered.",
+        choices:[
+          { text:"Protect them anyway", repDelta:+1, nextMission:"Defence", outcome:"You do the right thing. Some hearts soften." },
+          { text:"Move on and ignore them", repDelta:0, nextMission:"Pursuit", outcome:"You leave bitterness behind you." },
+          { text:"Make an example", repDelta:-1, nextMission:"Escalation", outcome:"Fear returns order. It also returns hate." }
+        ]},
+      { title:"A Private Warning",
+        prompt:"A trusted ally quietly warns: one more failure and you’ll be removed from command.",
+        choices:[
+          { text:"Plan conservatively and hold", repDelta:+1, nextMission:"Defence", outcome:"You stabilise. It’s not glorious, but it’s survival." },
+          { text:"Gamble on a decisive strike", repDelta:0, nextMission:"Assault", outcome:"You bet everything. The next battle decides your fate." },
+          { text:"Disappear into a shadow war", repDelta:-1, nextMission:"Incursion", outcome:"You avoid judgement by avoiding everyone." }
+        ]},
+      { title:"Burnt Orders",
+        prompt:"Your written orders are found burned in a campfire. Someone is sabotaging you.",
+        choices:[
+          { text:"Hunt the saboteur", repDelta:+1, nextMission:"Revelation", outcome:"You uncover the knife behind the smile." },
+          { text:"Tighten security and move", repDelta:0, nextMission:"Pursuit", outcome:"You stop bleeding time and get back to the enemy." },
+          { text:"Blame the wrong person publicly", repDelta:-1, nextMission:"Escalation", outcome:"You pick a scapegoat. The real traitor smiles." }
+        ]},
     ],
+
     renowned: [
-      { title:"Call to War",
-        prompt:"Multiple allies request your leadership in a decisive campaign. They want your banner at the front.",
-        weights:{ slayer:1, redeemer:1 },
+      { title:"Calls for Aid",
+        prompt:"Multiple allies ask for your banner. They believe you can turn their war.",
         choices:[
-          { text:"Commit fully to the offensive", repDelta:+1, nextMission:"Escalation", outcome:"You take command. The war turns into something bigger." },
-          { text:"Choose one critical strike", repDelta:0, nextMission:"Assault", outcome:"You focus the blow. Precision, not spectacle." },
-          { text:"Delay to gather intelligence", repDelta:-1, nextMission:"Revelation", outcome:"You slow the tempo. Some call it wisdom. Others call it fear." }
+          { text:"Commit to a big offensive", repDelta:+1, nextMission:"Escalation", outcome:"You take command. The war becomes larger — and yours." },
+          { text:"Choose one precise strike", repDelta:0, nextMission:"Assault", outcome:"You focus the blow. Precision beats spectacle." },
+          { text:"Delay to gather intelligence", repDelta:-1, nextMission:"Revelation", outcome:"You slow the tempo. Some call it wisdom; others call it fear." }
         ]},
-      // (Paste the rest of your renowned pool from v10 here; weighting will apply automatically)
+      { title:"Hero Worship",
+        prompt:"Mortals treat you like a saint. It’s dangerous for them… and for you.",
+        choices:[
+          { text:"Use it to strengthen morale", repDelta:+1, nextMission:"Defence", outcome:"Hope hardens the line. The enemy breaks against it." },
+          { text:"Keep distance and stay practical", repDelta:0, nextMission:"Incursion", outcome:"You remain efficient. The myth stays intact." },
+          { text:"Reject them harshly", repDelta:-1, nextMission:"Pursuit", outcome:"You cut the cult. It leaves a hollow behind you." }
+        ]},
+      { title:"Azyr’s Attention",
+        prompt:"Azyr watches you closely now. Every success creates new expectations.",
+        choices:[
+          { text:"Accept the responsibility", repDelta:+1, nextMission:"Escalation", outcome:"You step into the spotlight. The war turns into a campaign." },
+          { text:"Balance orders with reality", repDelta:0, nextMission:"Defence", outcome:"You hold the line and manage politics — barely." },
+          { text:"Resist Azyr’s pressure", repDelta:-1, nextMission:"Revelation", outcome:"You insist on truth. Truth makes powerful enemies." }
+        ]},
+      { title:"Enemy Hunts You",
+        prompt:"The enemy begins targeting you specifically. You are now the prize.",
+        choices:[
+          { text:"Set a counter-trap", repDelta:+1, nextMission:"Defence", outcome:"You bait them and crush their killers." },
+          { text:"Strike first and keep moving", repDelta:0, nextMission:"Pursuit", outcome:"You deny them a clean shot. The chase becomes constant." },
+          { text:"Ignore the threat", repDelta:-1, nextMission:"Assault", outcome:"You stay bold. Bold bleeds." }
+        ]},
+      { title:"A Gift of Steel",
+        prompt:"A master-smith offers you a new weapon — if you use it publicly.",
+        choices:[
+          { text:"Accept and display it", repDelta:+1, nextMission:"Assault", outcome:"The host’s confidence spikes. The enemy takes notice." },
+          { text:"Accept but keep it quiet", repDelta:0, nextMission:"Incursion", outcome:"You gain power without the theatre." },
+          { text:"Refuse the politics", repDelta:-1, nextMission:"Revelation", outcome:"You offend someone influential. The war gains a shadow." }
+        ]},
+      { title:"Rivals Gather",
+        prompt:"Other commanders grow jealous. They begin circling like sharks.",
+        choices:[
+          { text:"Share credit and uplift others", repDelta:+1, nextMission:"Defence", outcome:"You build allies. Jealousy cools into respect." },
+          { text:"Ignore them and keep winning", repDelta:0, nextMission:"Escalation", outcome:"You race ahead. The pack follows — hungry." },
+          { text:"Crush dissent publicly", repDelta:-1, nextMission:"Assault", outcome:"You win the argument with force. It creates enemies." }
+        ]},
+      { title:"The People’s Champion",
+        prompt:"A town declares you their protector and refuses to evacuate without your promise.",
+        choices:[
+          { text:"Swear to protect them", repDelta:+1, nextMission:"Defence", outcome:"Your oath becomes a shield — and a chain." },
+          { text:"Evacuate them and move on", repDelta:0, nextMission:"Incursion", outcome:"You save lives. The war keeps moving." },
+          { text:"Force them to leave", repDelta:-1, nextMission:"Pursuit", outcome:"It’s efficient. It’s ugly. They won’t forget." }
+        ]},
+      { title:"A Great Omen",
+        prompt:"Prophets proclaim your next battle will ‘decide the region’. That’s… too much pressure.",
+        weights:{ prophet:2 },
+        choices:[
+          { text:"Use the prophecy to unite allies", repDelta:+1, nextMission:"Escalation", outcome:"You turn words into momentum. The war swells around you." },
+          { text:"Downplay it and focus", repDelta:0, nextMission:"Assault", outcome:"You refuse theatrics. Steel will decide." },
+          { text:"Mock the prophecy", repDelta:-1, nextMission:"Defence", outcome:"You cut superstition — and accidentally cut morale." }
+        ]},
     ]
   };
 
-  // =========================
-  // Background-weighted incident selection
-  // =========================
   function pickIncidentPool(){
     if(state.reputation <= 0) return incidents.disgraced;
     if(state.reputation >= 10) return incidents.renowned;
@@ -465,44 +922,38 @@
   function pickIncidentWeighted(pool){
     const bgKey = state.general?.bgKey || null;
     return weightedPick(pool, (inc) => {
-      // base weight
       let w = 1;
-
-      // background boost if defined
       if(bgKey && inc.weights && typeof inc.weights[bgKey] === "number"){
         w += inc.weights[bgKey];
       }
-
-      // small global nudges to keep it lively
-      // (e.g. if disgraced, slightly favour defensive/escape style, etc)
+      // tiny nudges by state
       if(state.reputation <= 0){
-        const anyDef = inc.choices?.some(c => c.nextMission === "Defence");
-        if(anyDef) w += 0.5;
+        if(inc.choices?.some(c => c.nextMission === "Defence")) w += 0.4;
       }
       if(state.reputation >= 10){
-        const anyBig = inc.choices?.some(c => c.nextMission === "Escalation" || c.nextMission === "Assault" || c.nextMission === "Revelation");
-        if(anyBig) w += 0.3;
+        if(inc.choices?.some(c => c.nextMission === "Escalation" || c.nextMission === "Assault" || c.nextMission === "Revelation")) w += 0.3;
       }
-
       return w;
     });
   }
 
-  // Helpers
   function ensureRealm(){
     if(!state.realm){ state.realm = pick(realms); save(); }
   }
+
   function rollGeneral(){
     const bg = pick(backgrounds);
     state.general = { name: `${pick(firstNames)} ${pick(lastNames)}`, bgKey: bg.k, bgLabel: bg.l };
     save();
   }
+
   function rollMission(){
     state.missionType = pick(missionTypes);
     state.lastHook = null;
     save();
     return state.missionType;
   }
+
   function rollBattleHook(){
     const t = state.missionType || rollMission();
     const hook = pick(battleHooks[t] || ["(No hooks defined yet.)"]);
@@ -510,6 +961,7 @@
     save();
     return state.lastHook;
   }
+
   function threat(){
     const r = roll(6)+roll(6);
     if(r<=3) return "Enemy weakened (-15–25%)";
@@ -518,11 +970,14 @@
     if(r<=11) return "Enemy reinforced (+10–15%)";
     return "Enemy heavily reinforced (+25%)";
   }
+
   function section(title, body, tooltipText){
     const help = tooltipText ? `<span class="help" tabindex="0" aria-label="Help">?<span class="tip">${tooltipText}</span></span>` : "";
     return `<div class="section"><div class="section-title">${title} ${help}</div>${body}</div>`;
   }
+
   function header(){ return `<p><strong>Realm:</strong> ${state.realm}</p>`; }
+
   function generalBlock(){
     if(!state.general) return `<p class="muted">No general yet. Click <strong>Roll General</strong>.</p>`;
     return `
@@ -532,6 +987,7 @@
       <p><strong>Mission:</strong> ${state.missionType || "—"}</p>
     `;
   }
+
   function battleHookBlock(){
     if(!state.missionType) rollMission();
     if(!state.lastHook || state.lastHook.type !== state.missionType) rollBattleHook();
@@ -546,12 +1002,10 @@
     document.getElementById("cur-general").textContent = state.general?.name || "—";
     document.getElementById("cur-bg").textContent = state.general?.bgLabel || "—";
     document.getElementById("cur-rep").textContent = (typeof state.reputation === "number") ? String(state.reputation) : "—";
-
     const s = getStateLabel();
     const pill = document.getElementById("cur-state");
     pill.style.display = "inline-block";
     pill.textContent = s;
-
     document.getElementById("cur-mission").textContent = state.missionType || "—";
   }
 
@@ -594,7 +1048,6 @@
     logDiv.innerHTML = items.join("");
   }
 
-  // Incident UI
   const incidentBox = document.getElementById("incidentBox");
   const btnIncident = document.getElementById("btn-incident");
   const incidentModeSelect = document.getElementById("incident-mode");
@@ -644,14 +1097,19 @@
     const choice = inc.choices[choiceIndex];
 
     state.reputation += choice.repDelta;
-    checkThresholds();
 
+    // thresholds/state blurbs
+    const beforeState = getStateLabel();
+    checkThresholds();
+    const afterState = getStateLabel();
+
+    // incident sets next mission
     state.missionType = choice.nextMission;
     state.lastHook = null;
 
     state.log.push({
       kind:"incident",
-      state:getStateLabel(),
+      state:afterState,
       title:inc.title,
       prompt:inc.prompt,
       choice:choice.text,
@@ -674,6 +1132,7 @@
         "Still flavour only — play any battleplan you want."
       );
 
+    // hide box after choosing
     incidentBox.style.display = "none";
     incidentBox.innerHTML = "";
 
@@ -731,6 +1190,7 @@
       ts: Date.now()
     });
 
+    // clear hook so next time you can roll fresh
     state.lastHook = null;
     save();
 
@@ -743,7 +1203,7 @@
     renderCurrent();
     renderLog();
 
-    // NEW: auto-incident mode
+    // Auto incident
     if(state.incidentMode === "always"){
       rollIncidentNow();
     }
@@ -784,6 +1244,7 @@
 
   document.getElementById("btn-interlude").onclick = () => {
     ensureRealm();
+    if(!state.general) rollGeneral();
     const pool = [
       ...interludes.base,
       ...(interludes[state.general?.bgKey] || [])
@@ -844,20 +1305,19 @@
     renderLog();
   };
 
-  // Incident mode dropdown
   incidentModeSelect.onchange = () => {
     state.incidentMode = incidentModeSelect.value;
     save();
     applyIncidentModeUI();
   };
 
-  // Initial
-  applyIncidentModeUI();
+  // Initial render
   checkThresholds();
+  applyIncidentModeUI();
   renderCurrent();
   renderLog();
 
 })();
 </script>
 </body>
-</html>
+  </html>
