@@ -72,6 +72,9 @@
       color:#666;
       font-weight:800;
       margin-bottom:6px;
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
 
     /* Campaign log header */
@@ -89,6 +92,59 @@
       display:flex;align-items:center;justify-content:center;
       font-size:18px;
     }
+
+    /* Tooltip */
+    .help{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:18px;height:18px;
+      border-radius:999px;
+      border:1px solid #d0d0d0;
+      background:#f7f7f7;
+      color:#555;
+      font-weight:900;
+      font-size:12px;
+      line-height:1;
+      cursor:help;
+      position:relative;
+      user-select:none;
+      flex:0 0 auto;
+    }
+    .help:focus{ outline:2px solid #1976d2; outline-offset:2px; }
+
+    .help .tip{
+      display:none;
+      position:absolute;
+      z-index:50;
+      left:50%;
+      transform:translateX(-50%);
+      top:24px;
+      width:min(280px, 75vw);
+      background:#111;
+      color:#fff;
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:12px;
+      font-weight:600;
+      box-shadow:0 8px 20px rgba(0,0,0,.2);
+    }
+    .help .tip::before{
+      content:"";
+      position:absolute;
+      top:-6px;
+      left:50%;
+      transform:translateX(-50%);
+      border-width:0 6px 6px 6px;
+      border-style:solid;
+      border-color:transparent transparent #111 transparent;
+    }
+
+    /* Show tooltip on hover AND tap/focus */
+    .help:hover .tip,
+    .help:focus .tip{
+      display:block;
+    }
   </style>
 </head>
 
@@ -101,10 +157,21 @@
   <div class="row" style="margin-top:12px;">
     <div class="card">
       <h3 style="font-size:16px;">Current Character</h3>
+
       <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
+
       <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
-      <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
-      <p class="kv"><b>Purpose:</b> <span id="cur-purpose">—</span></p>
+
+      <p class="kv">
+        <b>Background:</b> <span id="cur-bg">—</span>
+      </p>
+
+      <p class="kv">
+        <b>Mission:</b> <span id="cur-mission">—</span>
+        <span class="help" tabindex="0" aria-label="What is Mission?">?
+          <span class="tip">Your <b>Mission</b> is the reason your force is fighting right now — a personal goal or duty. It doesn’t change rules; it gives context.</span>
+        </span>
+      </p>
 
       <div class="btns">
         <button id="btn-reset" class="danger" type="button">Reset Character</button>
@@ -137,11 +204,10 @@
 
 <script>
 (function(){
-  const STORAGE = "woehammer_stormcast_story_v4";
+  const STORAGE = "woehammer_stormcast_story_v5";
   const pick = a => a[Math.floor(Math.random()*a.length)];
   const roll = n => Math.floor(Math.random()*n)+1;
 
-  // Load state
   let state = {};
   try { state = JSON.parse(localStorage.getItem(STORAGE) || "{}"); }
   catch { state = {}; }
@@ -149,18 +215,10 @@
   const save = () => localStorage.setItem(STORAGE, JSON.stringify(state));
   const clear = () => localStorage.removeItem(STORAGE);
 
-  // Tables
   const realms = ["Aqshy","Ghyran","Shyish","Ghur","Chamon","Ulgu"];
 
-  const firstNames = [
-    "Aster","Lyra","Kaelis","Brannic","Seraphine","Garran",
-    "Odrin","Merek","Siora","Eamon","Vexan","Thane"
-  ];
-  const lastNames = [
-    "Valorn","Dawnward","Stormvein","Goldsign","Halospear",
-    "Ironlight","Truthbrand","Ashward","Skywrath",
-    "Steelward","Windstride","Brightfall"
-  ];
+  const firstNames = ["Aster","Lyra","Kaelis","Brannic","Seraphine","Garran","Odrin","Merek","Siora","Eamon","Vexan","Thane"];
+  const lastNames  = ["Valorn","Dawnward","Stormvein","Goldsign","Halospear","Ironlight","Truthbrand","Ashward","Skywrath","Steelward","Windstride","Brightfall"];
 
   const backgrounds = [
     {k:"reforged",l:"Many-Times Reforged (Memories Fraying)"},
@@ -171,8 +229,7 @@
     {k:"judge",l:"Celestial Judge (No Mercy for Corruption)"}
   ];
 
-  // Renamed from "complications" -> "purposes" (player-facing)
-  const purposes = [
+  const missions = [
     "Protect a vulnerable settlement",
     "Recover a sacred relic before the enemy does",
     "Hunt down a particular foe",
@@ -181,8 +238,8 @@
     "Answer a prophecy or omen you cannot ignore"
   ];
 
-  // Still uses episodeTypes internally, but user sees "Battle Hook"
-  const episodeTypes = ["Incursion","Pursuit","Escalation","Revelation"];
+  const types = ["Incursion","Pursuit","Escalation","Revelation"];
+
   const battleHooks = {
     Incursion:[
       "A sudden assault strikes an area thought secure. The enemy withdraws before full strength can be brought to bear.",
@@ -209,31 +266,16 @@
       "Orders from Azyr conflict with reality on the ground.",
       "A memory surfaces that should not exist."
     ],
-    reforged:[
-      "You forget a name that once mattered more than victory."
-    ],
-    new:[
-      "Immortality settles in — heavier than expected."
-    ],
-    redeemer:[
-      "A plea for protection arrives at the worst possible moment."
-    ],
-    slayer:[
-      "You glimpse a sign that your quarry is close — and it makes you reckless."
-    ],
-    judge:[
-      "Corruption is found among allies. Justice will fracture trust."
-    ],
-    prophet:[
-      "A dream leaves you certain of the next battlefield… and afraid of it."
-    ]
+    reforged:["You forget a name that once mattered more than victory."],
+    new:["Immortality settles in — heavier than expected."],
+    redeemer:["A plea for protection arrives at the worst possible moment."],
+    slayer:["You glimpse a sign that your quarry is close — and it makes you reckless."],
+    judge:["Corruption is found among allies. Justice will fracture trust."],
+    prophet:["A dream leaves you certain of the next battlefield… and afraid of it."]
   };
 
   function ensureRealm(){
-    if(!state.realm){
-      state.realm = pick(realms);
-      save();
-    }
+    if(!state.realm){ state.realm = pick(realms); save(); }
   }
 
   function rollGeneral(){
@@ -242,7 +284,7 @@
       name: `${pick(firstNames)} ${pick(lastNames)}`,
       bgKey: bg.k,
       bgLabel: bg.l,
-      purpose: pick(purposes)
+      mission: pick(missions)
     };
     save();
   }
@@ -256,10 +298,14 @@
     return "Enemy heavily reinforced (+25%)";
   }
 
-  function section(title, body){
+  function section(title, body, tooltipText){
+    const help = tooltipText ? `
+      <span class="help" tabindex="0" aria-label="Help">?
+        <span class="tip">${tooltipText}</span>
+      </span>` : "";
     return `
       <div class="section">
-        <div class="section-title">${title}</div>
+        <div class="section-title">${title} ${help}</div>
         ${body}
       </div>
     `;
@@ -274,7 +320,7 @@
     return `
       <p><strong>General:</strong> ${state.general.name}</p>
       <p><strong>Background:</strong> ${state.general.bgLabel}</p>
-      <p><strong>Purpose:</strong> ${state.general.purpose}</p>
+      <p><strong>Mission:</strong> ${state.general.mission}</p>
     `;
   }
 
@@ -282,22 +328,25 @@
     document.getElementById("cur-realm").textContent = state.realm || "—";
     document.getElementById("cur-general").textContent = state.general?.name || "—";
     document.getElementById("cur-bg").textContent = state.general?.bgLabel || "—";
-    document.getElementById("cur-purpose").textContent = state.general?.purpose || "—";
+    document.getElementById("cur-mission").textContent = state.general?.mission || "—";
   }
 
   const out = document.getElementById("out");
 
-  // Buttons
   document.getElementById("btn-all").onclick = () => {
     ensureRealm();
     if(!state.general) rollGeneral();
 
-    const type = pick(episodeTypes);
+    const type = pick(types);
     out.innerHTML =
       header() +
       generalBlock() +
-      section("Battle Hook", `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`) +
-      section("Threat", `<p>${threat()}</p>`);
+      section(
+        "Battle Hook",
+        `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`,
+        "A <b>Battle Hook</b> is a short story prompt for why the next game is happening. It’s not a scenario — just narrative context."
+      ) +
+      section("Threat", `<p>${threat()}</p>`, "Use this to slightly adjust points if you want. Ignore it if you don’t.");
 
     renderCurrent();
   };
@@ -311,10 +360,14 @@
 
   document.getElementById("btn-battle").onclick = () => {
     ensureRealm();
-    const type = pick(episodeTypes);
+    const type = pick(types);
     out.innerHTML =
       header() + generalBlock() +
-      section("Battle Hook", `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`);
+      section(
+        "Battle Hook",
+        `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`,
+        "A <b>Battle Hook</b> is a story prompt for why the next game is happening. Not a forced mission."
+      );
     renderCurrent();
   };
 
@@ -326,7 +379,7 @@
     ];
     out.innerHTML =
       header() + generalBlock() +
-      section("Interlude", `<p>${pick(pool)}</p>`);
+      section("Interlude", `<p>${pick(pool)}</p>`, "A short between-battle beat. Use it as a scene, a paragraph of diary text, or a quick roleplay moment.");
     renderCurrent();
   };
 
@@ -346,9 +399,7 @@
     }
   };
 
-  // Initial render from saved state
   renderCurrent();
-
 })();
 </script>
 </body>
