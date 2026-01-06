@@ -6,145 +6,34 @@
   <title>Stormcast Eternals – Story Mode Generator</title>
 
   <style>
-    body{
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      margin:0;
-      padding:16px;
-      background:#fff;
-    }
-    .wrap{
-      max-width:980px;
-      margin:0 auto;
-      border:1px solid #ddd;
-      border-radius:12px;
-      padding:16px;
-      background:#fff;
-    }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:16px;background:#fff}
+    .wrap{max-width:980px;margin:0 auto;border:1px solid #ddd;border-radius:12px;padding:16px;background:#fff}
     .row{display:flex;flex-wrap:wrap;gap:12px}
-    .card{
-      border:1px solid #e6e6e6;
-      border-radius:12px;
-      padding:12px;
-      background:#fafafa;
-      flex:1;
-      min-width:260px;
-    }
+    .card{border:1px solid #e6e6e6;border-radius:12px;padding:12px;background:#fafafa;flex:1;min-width:260px}
     .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-    button{
-      padding:10px 12px;
-      border-radius:10px;
-      border:1px solid #ccc;
-      background:#f3f3f3;
-      font-weight:800;
-      cursor:pointer
-    }
+    button{padding:10px 12px;border-radius:10px;border:1px solid #ccc;background:#f3f3f3;font-weight:800;cursor:pointer}
     button.primary{background:#1976d2;border-color:#1976d2;color:#fff}
     button.danger{background:#fff;border-color:#d32f2f;color:#d32f2f}
-
     h3{margin:0 0 6px 0}
     .muted{color:#777;font-size:12px}
     .kv{margin:0;font-size:14px;line-height:1.4}
     .kv b{display:inline-block;min-width:110px}
 
-    /* Output */
-    .output{
-      margin:0;
-      padding:16px;
-      background:#fff;
-      border-radius:12px;
-      min-height:220px;
-      border:1px solid #ddd;
-      line-height:1.55;
-    }
+    .output{margin:0;padding:16px;background:#fff;border-radius:12px;min-height:220px;border:1px solid #ddd;line-height:1.55}
     .output p{margin:0 0 10px 0}
     .output strong{font-weight:700}
 
-    /* Sections */
-    .section{
-      margin:14px 0 10px 0;
-      padding-top:12px;
-      border-top:1px solid #e9e9e9;
-    }
-    .section-title{
-      font-size:13px;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      color:#666;
-      font-weight:800;
-      margin-bottom:6px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
+    .section{margin:14px 0 10px 0;padding-top:12px;border-top:1px solid #e9e9e9}
+    .section-title{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#666;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px}
 
-    /* Campaign log header */
-    .log-header{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin:12px 0 6px 0;
-    }
-    .log-icon{
-      width:34px;height:34px;
-      border-radius:10px;
-      border:1px solid #e1e1e1;
-      background:#f7f7f7;
-      display:flex;align-items:center;justify-content:center;
-      font-size:18px;
-    }
+    .log-header{display:flex;align-items:center;gap:10px;margin:12px 0 6px 0}
+    .log-icon{width:34px;height:34px;border-radius:10px;border:1px solid #e1e1e1;background:#f7f7f7;display:flex;align-items:center;justify-content:center;font-size:18px}
 
-    /* Tooltip */
-    .help{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:18px;height:18px;
-      border-radius:999px;
-      border:1px solid #d0d0d0;
-      background:#f7f7f7;
-      color:#555;
-      font-weight:900;
-      font-size:12px;
-      line-height:1;
-      cursor:help;
-      position:relative;
-      user-select:none;
-      flex:0 0 auto;
-    }
-    .help:focus{ outline:2px solid #1976d2; outline-offset:2px; }
-
-    .help .tip{
-      display:none;
-      position:absolute;
-      z-index:50;
-      left:50%;
-      transform:translateX(-50%);
-      top:24px;
-      width:min(280px, 75vw);
-      background:#111;
-      color:#fff;
-      border-radius:10px;
-      padding:10px 12px;
-      font-size:12px;
-      font-weight:600;
-      box-shadow:0 8px 20px rgba(0,0,0,.2);
-    }
-    .help .tip::before{
-      content:"";
-      position:absolute;
-      top:-6px;
-      left:50%;
-      transform:translateX(-50%);
-      border-width:0 6px 6px 6px;
-      border-style:solid;
-      border-color:transparent transparent #111 transparent;
-    }
-
-    /* Show tooltip on hover AND tap/focus */
-    .help:hover .tip,
-    .help:focus .tip{
-      display:block;
-    }
+    .help{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;border:1px solid #d0d0d0;background:#f7f7f7;color:#555;font-weight:900;font-size:12px;line-height:1;cursor:help;position:relative;user-select:none;flex:0 0 auto}
+    .help:focus{outline:2px solid #1976d2;outline-offset:2px}
+    .help .tip{display:none;position:absolute;z-index:50;left:50%;transform:translateX(-50%);top:24px;width:min(320px,80vw);background:#111;color:#fff;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+    .help .tip::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);border-width:0 6px 6px 6px;border-style:solid;border-color:transparent transparent #111 transparent}
+    .help:hover .tip,.help:focus .tip{display:block}
   </style>
 </head>
 
@@ -157,19 +46,14 @@
   <div class="row" style="margin-top:12px;">
     <div class="card">
       <h3 style="font-size:16px;">Current Character</h3>
-
       <p class="kv"><b>Realm:</b> <span id="cur-realm">—</span></p>
-
       <p class="kv"><b>General:</b> <span id="cur-general">—</span></p>
-
-      <p class="kv">
-        <b>Background:</b> <span id="cur-bg">—</span>
-      </p>
+      <p class="kv"><b>Background:</b> <span id="cur-bg">—</span></p>
 
       <p class="kv">
         <b>Mission:</b> <span id="cur-mission">—</span>
         <span class="help" tabindex="0" aria-label="What is Mission?">?
-          <span class="tip">Your <b>Mission</b> is the reason your force is fighting right now — a personal goal or duty. It doesn’t change rules; it gives context.</span>
+          <span class="tip"><b>Mission</b> is the battle type for this chapter (Incursion, Pursuit, Escalation, Revelation). Roll <b>Battle Hook</b> to get different blurbs for the same Mission.</span>
         </span>
       </p>
 
@@ -183,11 +67,12 @@
       <div class="btns">
         <button id="btn-all" class="primary" type="button">Generate Full Starter</button>
         <button id="btn-general" type="button">Roll General</button>
-        <button id="btn-battle" type="button">Roll Battle Hook</button>
+        <button id="btn-mission" type="button">Roll Mission</button>
+        <button id="btn-hook" type="button">Roll Battle Hook</button>
         <button id="btn-interlude" type="button">Roll Interlude</button>
         <button id="btn-copy" type="button">Copy</button>
       </div>
-      <p class="muted">Roll a General once, then Battle Hooks + Interludes between games.</p>
+      <p class="muted">Roll Mission once, then reroll Battle Hook as many times as you like for different blurbs.</p>
     </div>
   </div>
 
@@ -204,7 +89,7 @@
 
 <script>
 (function(){
-  const STORAGE = "woehammer_stormcast_story_v5";
+  const STORAGE = "woehammer_stormcast_story_v7";
   const pick = a => a[Math.floor(Math.random()*a.length)];
   const roll = n => Math.floor(Math.random()*n)+1;
 
@@ -229,34 +114,37 @@
     {k:"judge",l:"Celestial Judge (No Mercy for Corruption)"}
   ];
 
-  const missions = [
-    "Protect a vulnerable settlement",
-    "Recover a sacred relic before the enemy does",
-    "Hunt down a particular foe",
-    "Hold the line until reinforcements arrive",
-    "Break the enemy’s supply route",
-    "Answer a prophecy or omen you cannot ignore"
-  ];
+  const missionTypes = ["Incursion","Pursuit","Escalation","Revelation"];
 
-  const types = ["Incursion","Pursuit","Escalation","Revelation"];
-
+  // Multiple blurbs PER mission type (add more anytime)
   const battleHooks = {
     Incursion:[
-      "A sudden assault strikes an area thought secure. The enemy withdraws before full strength can be brought to bear.",
-      "A probing attack tests defences and resolve. Someone is watching closely.",
-      "Enemy forces arrive unexpectedly, forcing a rapid response."
+      "A sudden assault strikes an area you previously thought secure. You must muster quickly, march your force, and drive the attackers back before they slip away with whatever they came for.",
+      "Raiders appear from hidden routes at dusk, striking supply wagons and outposts. If you don’t respond immediately, your campaign will starve before it truly begins.",
+      "Enemy scouts and light troops push into your territory, testing your response. Break them now or they’ll map every weakness you have.",
+      "A night attack hits your outer pickets. The alarm goes up too late to prevent damage — but not too late for vengeance. You must push the enemy from your doorstep.",
+      "A false signal draws your patrols away, then the real blow falls. The enemy wants something specific. You can’t let them leave with it."
     ],
     Pursuit:[
-      "The enemy retreats in haste. Letting them escape will cost you later.",
-      "Rear-guards fight viciously, buying time with blood."
+      "The enemy is falling back, wounded but dangerous. You can let them escape and regroup… or you can chase them down and finish the fight on your terms.",
+      "A rearguard buys time with brutal efficiency. Every mile you gain costs blood — but if you relent, the enemy will be gone by morning.",
+      "You catch glimpses of fleeing banners through smoke and rain. If you can force a battle before they reach safety, you might end this quickly.",
+      "Tracks and broken standards mark the route of retreat. Your scouts insist the enemy is close. Push hard now, or the trail goes cold.",
+      "Your strike broke their line — but not their will. The enemy runs toward cover. If you can cut them off, you can turn a victory into a rout."
     ],
     Escalation:[
-      "The conflict widens. Reinforcements arrive and restraint vanishes.",
-      "What began quietly is now open war."
+      "The conflict widens and restraint dies. Reinforcements arrive, strongpoints are seized, and the war becomes impossible to ignore. This battle will shape the next phase of the campaign.",
+      "Positions harden into front lines. Both sides commit fully — supplies, morale, and reputations are on the line, and neutrality is no longer an option.",
+      "What began as skirmishes becomes open warfare. Strike hard now, or you’ll be fighting a stronger enemy later.",
+      "The enemy has fortified a key position overnight. If you don’t break it now, the campaign will stall and your allies will lose faith.",
+      "Rumours spread through nearby settlements: this war is here to stay. A decisive battle is needed — something that convinces everyone who holds the ground."
     ],
     Revelation:[
-      "You learn the enemy was never acting alone.",
-      "Victory uncovers a truth you wish you had not found."
+      "Victory uncovers something you weren’t meant to find — a truth, a relic, or a betrayal. Now you must fight not just to win, but to control who learns what.",
+      "Evidence suggests the enemy was never acting alone. Your next battle isn’t just against soldiers — it’s against the hidden hand guiding them.",
+      "A pattern becomes undeniable. The war is part of something older and darker than you knew, and this engagement may decide what comes next.",
+      "A captured foe speaks a name you recognise — but you don’t know why. The battle ahead may reveal what reforging has stolen from you.",
+      "You find signs of a ritual site, abandoned in haste. The enemy is racing to finish what they started. You must stop them before the truth becomes catastrophe."
     ]
   };
 
@@ -283,10 +171,25 @@
     state.general = {
       name: `${pick(firstNames)} ${pick(lastNames)}`,
       bgKey: bg.k,
-      bgLabel: bg.l,
-      mission: pick(missions)
+      bgLabel: bg.l
     };
     save();
+  }
+
+  function rollMission(){
+    const t = pick(missionTypes);
+    state.missionType = t;
+    save();
+    return t;
+  }
+
+  // Roll a blurb for the CURRENT mission type (does not change mission type)
+  function rollBattleHookForCurrentMission(){
+    const t = state.missionType || rollMission();
+    const hook = pick(battleHooks[t] || ["(No hooks defined yet for this mission type.)"]);
+    state.lastHook = { type: t, text: hook };
+    save();
+    return state.lastHook;
   }
 
   function threat(){
@@ -311,16 +214,14 @@
     `;
   }
 
-  function header(){
-    return `<p><strong>Realm:</strong> ${state.realm}</p>`;
-  }
+  function header(){ return `<p><strong>Realm:</strong> ${state.realm}</p>`; }
 
   function generalBlock(){
     if(!state.general) return `<p class="muted">No general yet. Click <strong>Roll General</strong>.</p>`;
     return `
       <p><strong>General:</strong> ${state.general.name}</p>
       <p><strong>Background:</strong> ${state.general.bgLabel}</p>
-      <p><strong>Mission:</strong> ${state.general.mission}</p>
+      <p><strong>Mission:</strong> ${state.missionType || "—"}</p>
     `;
   }
 
@@ -328,24 +229,30 @@
     document.getElementById("cur-realm").textContent = state.realm || "—";
     document.getElementById("cur-general").textContent = state.general?.name || "—";
     document.getElementById("cur-bg").textContent = state.general?.bgLabel || "—";
-    document.getElementById("cur-mission").textContent = state.general?.mission || "—";
+    document.getElementById("cur-mission").textContent = state.missionType || "—";
   }
 
   const out = document.getElementById("out");
 
+  function battleHookBlock(){
+    const hook = state.lastHook?.type === (state.missionType || "") ? state.lastHook : rollBattleHookForCurrentMission();
+    return section(
+      "Battle Hook",
+      `<p><strong>${hook.type}:</strong> ${hook.text}</p>`,
+      "Reroll this to get a different blurb for the same Mission type."
+    );
+  }
+
   document.getElementById("btn-all").onclick = () => {
     ensureRealm();
     if(!state.general) rollGeneral();
+    if(!state.missionType) rollMission();
+    rollBattleHookForCurrentMission();
 
-    const type = pick(types);
     out.innerHTML =
       header() +
       generalBlock() +
-      section(
-        "Battle Hook",
-        `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`,
-        "A <b>Battle Hook</b> is a short story prompt for why the next game is happening. It’s not a scenario — just narrative context."
-      ) +
+      battleHookBlock() +
       section("Threat", `<p>${threat()}</p>`, "Use this to slightly adjust points if you want. Ignore it if you don’t.");
 
     renderCurrent();
@@ -358,16 +265,19 @@
     renderCurrent();
   };
 
-  document.getElementById("btn-battle").onclick = () => {
+  document.getElementById("btn-mission").onclick = () => {
     ensureRealm();
-    const type = pick(types);
-    out.innerHTML =
-      header() + generalBlock() +
-      section(
-        "Battle Hook",
-        `<p><strong>${type}:</strong> ${pick(battleHooks[type])}</p>`,
-        "A <b>Battle Hook</b> is a story prompt for why the next game is happening. Not a forced mission."
-      );
+    rollMission();           // changes mission type
+    rollBattleHookForCurrentMission(); // auto-roll first hook for that mission
+    out.innerHTML = header() + generalBlock() + battleHookBlock();
+    renderCurrent();
+  };
+
+  document.getElementById("btn-hook").onclick = () => {
+    ensureRealm();
+    if(!state.missionType) rollMission();
+    rollBattleHookForCurrentMission(); // rerolls hook, mission stays same
+    out.innerHTML = header() + generalBlock() + battleHookBlock();
     renderCurrent();
   };
 
@@ -379,7 +289,9 @@
     ];
     out.innerHTML =
       header() + generalBlock() +
-      section("Interlude", `<p>${pick(pool)}</p>`, "A short between-battle beat. Use it as a scene, a paragraph of diary text, or a quick roleplay moment.");
+      section("Interlude", `<p>${pick(pool)}</p>`,
+        "A short between-battle beat. Use it as a scene, a paragraph of diary text, or a quick roleplay moment."
+      );
     renderCurrent();
   };
 
@@ -391,12 +303,8 @@
   };
 
   document.getElementById("btn-copy").onclick = async () => {
-    try{
-      await navigator.clipboard.writeText(out.innerText || "");
-      alert("Copied");
-    }catch(e){
-      alert("Copy failed. Select the text and copy manually.");
-    }
+    try{ await navigator.clipboard.writeText(out.innerText || ""); alert("Copied"); }
+    catch(e){ alert("Copy failed. Select the text and copy manually."); }
   };
 
   renderCurrent();
