@@ -89,10 +89,10 @@
         <b>Mission:</b> <span id="cur-mission">—</span>
         <span class="help" tabindex="0" aria-label="Mission help">?
           <span class="tip">
-            <b>Mission</b> is just story flavour — a label for what the next battle feels like (Incursion, Pursuit, etc).
+            <b>Mission</b> is just story flavour. A label for what the next battle feels like (Incursion, Pursuit, etc).
             <br><br>
-            You can still play <b>any</b> games you want: casual, competitive, GHB battleplans, Path to Glory, or Spearhead — against <b>any</b> opponent.
-            This tool never forces a scenario; it just gives narrative context.
+            You can still play <b>any</b> games you want: casual, competitive, GHB battleplans, Path to Glory, or Spearhead, against <b>any</b> opponent.
+            This tool never forces a scenario, it just gives narrative context.
           </span>
         </span>
       </p>
@@ -119,9 +119,9 @@
       <!-- POST-BATTLE RESULT MOVED HERE: directly above incident -->
       <div class="section" style="border-top:none;padding-top:0;margin-top:0;">
         <div class="section-title">
-          Post-Battle Result
+          Post Battle Result
           <span class="help" tabindex="0" aria-label="Post-battle help">?
-            <span class="tip">After you play the game, pick Win/Draw/Loss to generate an After Action report and save Battle # to the Campaign Log. This also updates Reputation.</span>
+            <span class="tip">After you play the game, pick Win/Draw/Loss to generate an After Action report and save the Battle # to the Campaign Log. This also updates your characters Reputation.</span>
           </span>
         </div>
         <div class="btns" style="margin-top:8px;">
@@ -137,7 +137,7 @@
           Between Battles Incident (Optional)
           <span class="help" tabindex="0" aria-label="Incident help">?
             <span class="tip">
-              Incidents are short choices between games. Your choice may quietly affect <b>Reputation</b> and can set your <b>next Mission</b>.
+              Incidents are short narrative choices between games. Your choice may affect your <b>Reputation</b> and can set the path of your <b>next Mission</b>.
               Consequences are hidden until you choose.
             </span>
           </span>
@@ -171,7 +171,7 @@
         <div id="incidentBox" class="incidentBox" style="display:none;"></div>
       </div>
 
-      <p class="muted" style="margin:0;">Reminder: this is narrative flavour only. Play whatever battleplan you like.</p>
+      <p class="muted" style="margin:0;">Reminder: this is for narrative flavour only. Play whatever battleplan you like.</p>
     </div>
   </div>
 
@@ -257,56 +257,56 @@
   const battleHooks = {
     Incursion:[
       "A sudden assault strikes an area you previously thought secure. You must muster quickly, march your force, and drive the attackers back before they slip away with whatever they came for.",
-      "Raiders appear from hidden routes at dusk, striking supply wagons and outposts. If you don’t respond immediately, your campaign will starve before it truly begins.",
+      "Raiders appear from hidden paths at dusk, hitting supply wagons and outposts. If you don’t respond, your forces will suffer.",
       "Enemy scouts and light troops push into your territory, testing your response. Break them now or they’ll map every weakness you have.",
-      "Pickets vanish overnight. Smoke rises from a hamlet that swore it was loyal. Something is probing your lines — and it’s learning fast.",
+      "Pickets vanish overnight. Smoke rises from a hamlet that swore it was loyal. Something is probing your lines and it’s learning fast.",
       "A covert landing or sudden portal-surge brings enemies into your rear. You have one chance to contain it before panic spreads."
     ],
     Pursuit:[
-      "The enemy is falling back, wounded but dangerous. You can let them escape and regroup… or you can chase them down and finish the fight on your terms.",
-      "A rearguard buys time with brutal efficiency. Every mile you gain costs blood — but if you relent, the enemy will be gone by morning.",
+      "The enemy is falling back, wounded but dangerous. You can let them escape and regroup… or you can chase them down and finish them on your terms.",
+      "A rearguard buys time with brutal efficiency. Every mile you gain costs blood, but if you relent, the enemy will be gone by morning.",
       "You catch glimpses of fleeing banners through smoke and rain. If you can force a battle before they reach safety, you might end this quickly.",
-      "The foe retreats into broken ground. Speed wins, but reckless haste will hand them an ambush.",
-      "You press them through night and storm. When the fight comes, it will be desperate and close."
+      "The foe retreats into rough ground. Speed wins, but haste will hand them an ambush.",
+      "You press them through night and day. When the fight comes, it will be desperate and close."
     ],
     Defence:[
       "You are forced to hold ground against pressure. If your line breaks, everything behind it becomes vulnerable.",
-      "A key position must be defended — bridge, shrine, road, or gate. The enemy knows it too, and they are coming in strength.",
-      "You take shelter in contested ground and prepare to weather the storm. Survival is victory enough — for now.",
+      "A key position must be defended (bridge, shrine, road, or gate). The enemy knows it too, and they are coming in strength.",
+      "You take shelter in contested ground and prepare to weather the storm. Survival is victory enough, for now.",
       "A refugee column chokes the road behind your lines. You must hold long enough to get them through.",
-      "Your allies’ morale buckles. If you can’t anchor the field, the whole front will collapse."
+      "Your allies’ morale buckles. If you can’t anchor their flank, the whole front will collapse."
     ],
     Assault:[
-      "You march to strike a hardened enemy position. This won’t be a skirmish — it’s a deliberate blow meant to break them.",
-      "A fortified point blocks your progress. You must smash it open before the campaign stalls.",
+      "You march to strike a hardened enemy position. This won’t be a skirmish, but a deliberate blow meant to break them.",
+      "A fortified position blocks your progress. You must take it before the campaign stalls.",
       "You choose the battlefield and attack with purpose. The enemy will remember this day.",
       "The foe has overextended. A swift hammerblow now could shatter their momentum.",
       "Your scouts find the enemy’s supply hub. Destroy it, and the war changes pace."
     ],
     Escalation:[
-      "The conflict widens and restraint dies. Reinforcements arrive, strongpoints are seized, and the war becomes impossible to ignore.",
-      "Positions harden into front lines. Both sides commit fully — supplies, morale, and reputations are on the line.",
+      "The conflict widens. Reinforcements arrive, strongpoints are seized, and the war becomes impossible to ignore.",
+      "Positions harden on the front lines. Both sides commit fully. Supplies, morale, and reputations are on the line.",
       "What began as skirmishes becomes open warfare. Strike hard now, or you’ll be fighting a stronger enemy later.",
       "A neighbouring power takes notice and intervenes. Now every action has consequences beyond the battlefield.",
       "The enemy brings heavier forces. If you don’t match them, you’ll be ground down."
     ],
     Revelation:[
-      "Victory may uncover something you weren’t meant to find — a truth, a relic, or a betrayal. Now you fight to control what is known.",
-      "Evidence suggests the enemy was never acting alone. Your next battle is against soldiers — and the hidden hand behind them.",
+      "Victory may uncover something you weren’t meant to find (a truth, a relic, or a betrayal). Now you fight to control what is known.",
+      "Evidence suggests the enemy was never acting alone. Your next battle is against soldiers and the hidden hand behind them.",
       "A pattern becomes undeniable. The war is part of something older and darker than you knew.",
-      "You find proof that a trusted ally has been compromised. To act openly risks civil conflict — but to stay silent risks ruin.",
+      "You find proof that a trusted ally has been compromised. To act openly risks internal conflict, but to stay silent risks more.",
       "A relic, map, prisoner, or omen points to a hidden site. Whoever holds it shapes the next chapter."
     ]
   };
 
   const interludes = {
     base:[
-      "Mortals look to you as a myth made real — and expect miracles.",
+      "Mortals look to you as a myth made real and expect miracles.",
       "Orders from Azyr conflict with reality on the ground.",
       "A memory surfaces that should not exist.",
       "A chamber-astrolabe in your camp ticks backwards for an hour, then shatters.",
       "Azyrite scribes ask for names of the fallen. You hesitate longer than you should.",
-      "Your wargear hums with distant thunder — as if answering a call you cannot hear."
+      "Your wargear hums with distant thunder, as if answering a call you cannot hear."
     ],
     reforged:[
       "You see a face in the crowd that died centuries ago… and it looks back.",
@@ -314,9 +314,9 @@
       "Your hands move through an old ritual you never learned… except you did."
     ],
     new:[
-      "Immortality settles in — heavier than expected.",
+      "Immortality settles in, heavier than expected.",
       "You feel the storm within you flare at a mortal’s simple kindness.",
-      "You realise you don’t know how to go home — not truly."
+      "You realise you don’t know how to go home, not truly."
     ],
     redeemer:[
       "A plea for protection arrives at the worst possible moment.",
@@ -324,7 +324,7 @@
       "A village priest asks if Sigmar still listens. You answer too honestly."
     ],
     slayer:[
-      "You glimpse a sign that your quarry is close — and it makes you reckless.",
+      "You glimpse a sign that your quarry is close and it makes you reckless.",
       "A weapon-mark matches the one you hunt. The trail is warm.",
       "A dying foe whispers the name you’ve sworn to end."
     ],
@@ -341,24 +341,24 @@
   };
 
   const afterAction = {
-    Incursion:{ win:["The raiders are driven off and their prize denied. Survivors scatter, but you’ve learned this wasn’t random.","You reclaim the ground. Whatever they came for remains out of reach — for now."],
+    Incursion:{ win:["The raiders are driven off and their prize denied. Survivors scatter, but you’ve learned this wasn’t random.","You reclaim the ground. Whatever they came for remains out of reach, for now."],
                draw:["You blunt the attack, but the enemy escapes with questions unanswered.","It feels less like a win and more like a warning written in blood."],
                loss:["They strike, take what they came for, and vanish. The area is no longer secure.","You’re forced back. The next fight will be fought on worse terms."] },
-    Pursuit:{ win:["You run them down. A retreat becomes a rout — and you seize momentum.","You catch their rearguard and break it. The survivors flee without order."],
+    Pursuit:{ win:["You run them down. A retreat becomes a rout and you seize momentum.","You catch their rearguard and break it. The survivors flee without order."],
               draw:["They slip away at the last. You’ve hurt them, but not ended them.","A messy fight in bad ground. You deny them safety, but not escape."],
               loss:["The pursuit turns. You overextend and pay for it.","They escape the net and regain their footing while you regroup."] },
     Defence:{ win:["You hold. The line does not break, and the enemy learns your resolve.","The enemy throws itself against your position and fails. Morale steadies."],
               draw:["You hold at cost. The ground remains contested, and the next assault will be worse.","Neither side breaks. You buy time, but not certainty."],
               loss:["The position falls. You withdraw under pressure, and the enemy’s shadow lengthens.","Your defence collapses. Now you must survive long enough to strike back."] },
     Assault:{ win:["Your attack lands true. The enemy’s position cracks and collapses.","You seize the point and turn it into a spearhead for what comes next."],
-              draw:["You gain ground, but not the break you wanted. The enemy clings on.","Your assault stalls. You’ll need a new angle — or more strength."],
+              draw:["You gain ground, but not the break you wanted. The enemy clings on.","Your assault stalls. You’ll need a new angle or more strength."],
               loss:["You’re thrown back from the objective. The enemy holds and your losses bite.","The assault fails. Worse: the enemy now knows you can bleed."] },
-    Escalation:{ win:["A decisive blow. The wider war shifts in your favour.","You take ground, morale, and initiative — the campaign has a new shape."],
-                 draw:["The front line forms here. Neither side gains the clear upper hand.","The war widens, but the decision is delayed — for now."],
-                 loss:["Your position collapses under pressure. The enemy claims initiative.","You’re forced to react. Reinforcements will be needed — quickly."] },
-    Revelation:{ win:["You win — and the truth is yours to wield. The enemy fought hard to keep it hidden.","The discovery changes everything. The next step isn’t victory — it’s containment."],
+    Escalation:{ win:["A decisive blow. The wider war shifts in your favour.","You take ground, morale, and initiative. The campaign has a new shape."],
+                 draw:["The front line forms here. Neither side gains the clear upper hand.","The war widens, but the decision is delayed, for now."],
+                 loss:["Your position collapses under pressure. The enemy claims initiative.","You’re forced to react. Reinforcements will be needed, quickly."] },
+    Revelation:{ win:["You win — and the truth is yours to wield. The enemy fought hard to keep it hidden.","The discovery changes everything. The next step isn’t victory, it’s containment."],
                  draw:["You gain fragments, not certainty. Enough to worry you, not enough to act cleanly.","You were inches from answers before the enemy slipped away."],
-                 loss:["The enemy escapes with secrets intact — or worse, with proof you didn’t want to be real.","You withdraw before the truth can be seized. Ignorance will cost you later."] }
+                 loss:["The enemy escapes with secrets intact or worse, with proof you didn’t want to be real.","You withdraw before the truth can be seized. Ignorance will cost you later."] }
   };
 
   function getStateLabel(){
@@ -387,10 +387,10 @@
     standard: [
       // Background-tilted starters
       { title:"Reforging Echo",
-        prompt:"During reforging rites, a memory resurfaces — something you should not remember.",
+        prompt:"During reforging rites, a memory resurfaces, something you should not remember.",
         weights:{ reforged:4, prophet:1 },
         choices:[
-          { text:"Confide in a trusted Stormcast", repDelta:+1, nextMission:"Revelation", outcome:"You share the fragment. It points to something hidden — and dangerous." },
+          { text:"Confide in a trusted Stormcast", repDelta:+1, nextMission:"Revelation", outcome:"You share the fragment. It points to something hidden and dangerous." },
           { text:"Record it and set it aside", repDelta:0, nextMission:"Incursion", outcome:"You commit it to record. The war continues. The question lingers." },
           { text:"Suppress it entirely", repDelta:-1, nextMission:"Escalation", outcome:"You bury the memory. It does not stay buried. Conflict grows around you." }
         ]},
@@ -399,19 +399,19 @@
         weights:{ redeemer:3 },
         choices:[
           { text:"Redeploy immediately to aid them", repDelta:+1, nextMission:"Defence", outcome:"You divert at once. The mortals see your banners and dare to hope." },
-          { text:"Promise aid once objectives are secured", repDelta:0, nextMission:"Incursion", outcome:"You send reassurance and press on — but danger doesn’t wait politely." },
-          { text:"Refuse — the war effort takes priority", repDelta:-1, nextMission:"Pursuit", outcome:"You deny the request. Word spreads quickly — and not kindly." }
+          { text:"Promise aid once objectives are secured", repDelta:0, nextMission:"Incursion", outcome:"You send reassurance and press on, but danger doesn’t wait politely." },
+          { text:"Refuse. The war effort takes priority", repDelta:-1, nextMission:"Pursuit", outcome:"You deny the request. Word spreads quickly, and not kindly." }
         ]},
       { title:"Captured Enemy Officer",
         prompt:"An enemy officer is taken alive after a sharp skirmish.",
         weights:{ judge:2, prophet:1 },
         choices:[
           { text:"Interrogate them thoroughly", repDelta:0, nextMission:"Revelation", outcome:"Under pressure, they reveal fragments of a larger design." },
-          { text:"Turn them over to mortal authorities", repDelta:+1, nextMission:"Incursion", outcome:"You delegate justice. The mortals see you as firm — and fair." },
+          { text:"Turn them over to mortal authorities", repDelta:+1, nextMission:"Incursion", outcome:"You delegate justice. The mortals see you as firm and fair." },
           { text:"Execute them immediately", repDelta:-1, nextMission:"Pursuit", outcome:"Swift judgement. The enemy will respond in kind." }
         ]},
       { title:"Lost Relic Rumour",
-        prompt:"A rumour spreads of a lost relic nearby. It could be nothing — or decisive.",
+        prompt:"A rumour spreads of a lost relic nearby. It could be nothing, or decisive.",
         weights:{ prophet:3 },
         choices:[
           { text:"Investigate personally", repDelta:+1, nextMission:"Revelation", outcome:"You follow the lead. It feels uncomfortably familiar." },
@@ -427,12 +427,12 @@
           { text:"Strike elsewhere to avoid it", repDelta:-1, nextMission:"Assault", outcome:"You bypass it. Some see prudence; others see fear." }
         ]},
       { title:"Corruption Unmasked",
-        prompt:"Evidence of corruption appears among allies — subtle, spreading, and hard to prove.",
+        prompt:"Evidence of corruption appears among allies, subtle, spreading, and hard to prove.",
         weights:{ judge:4, prophet:1 },
         choices:[
           { text:"Purge it immediately", repDelta:0, nextMission:"Assault", outcome:"You act without hesitation. The message is clear: no rot survives." },
           { text:"Investigate quietly and gather proof", repDelta:+1, nextMission:"Revelation", outcome:"You build a case. The truth is uglier than expected." },
-          { text:"Ignore it — the war comes first", repDelta:-1, nextMission:"Escalation", outcome:"You postpone judgement. The rot grows in the dark." }
+          { text:"Ignore it, the war comes first", repDelta:-1, nextMission:"Escalation", outcome:"You postpone judgement. The rot grows in the dark." }
         ]},
 
       // Big pool (50+). Keep these varied and short so it doesn’t get samey.
@@ -440,7 +440,7 @@
         prompt:"Another commander questions one of your decisions in front of the host.",
         choices:[
           { text:"Confront them openly", repDelta:0, nextMission:"Assault", outcome:"You meet challenge with certainty. The next battle will prove who is right." },
-          { text:"Settle it privately", repDelta:+1, nextMission:"Incursion", outcome:"Quiet words, measured tone. Unity holds — barely — and you march again." },
+          { text:"Settle it privately", repDelta:+1, nextMission:"Incursion", outcome:"Quiet words, measured tone. Unity holds, barely, and you march again." },
           { text:"Ignore it", repDelta:-1, nextMission:"Defence", outcome:"Silence reads as weakness to some. Your next stand will be watched closely." }
         ]},
       { title:"Enemy Survivors",
@@ -456,21 +456,21 @@
         choices:[
           { text:"Declare it a sign of favour", repDelta:+1, nextMission:"Assault", outcome:"You raise your voice and the host listens. Tomorrow, you strike." },
           { text:"Treat it as coincidence", repDelta:0, nextMission:"Incursion", outcome:"You keep your counsel. The enemy won’t be impressed by weather." },
-          { text:"Dismiss it as superstition", repDelta:-1, nextMission:"Defence", outcome:"Some bristle. Morale stiffens — not in a good way." }
+          { text:"Dismiss it as superstition", repDelta:-1, nextMission:"Defence", outcome:"Some bristle. Morale stiffens, not in a good way." }
         ]},
       { title:"Broken Bridge",
         prompt:"A key crossing is destroyed. The detour will cost days.",
         choices:[
           { text:"Force a crossing anyway", repDelta:0, nextMission:"Assault", outcome:"You gamble on speed. It will be bloody, but decisive." },
-          { text:"Hold and build a replacement", repDelta:+1, nextMission:"Defence", outcome:"You secure the area and rebuild. Slow — but controlled." },
+          { text:"Hold and build a replacement", repDelta:+1, nextMission:"Defence", outcome:"You secure the area and rebuild. Slow, but controlled." },
           { text:"Take the long way around", repDelta:-1, nextMission:"Pursuit", outcome:"You lose momentum. The enemy gains room to breathe." }
         ]},
       { title:"Azyrite Envoy",
         prompt:"An envoy arrives with advice that feels political rather than practical.",
         choices:[
           { text:"Follow the envoy’s guidance", repDelta:0, nextMission:"Escalation", outcome:"You comply. The war widens, and you inherit new obligations." },
-          { text:"Listen, then choose your own course", repDelta:+1, nextMission:"Incursion", outcome:"You show respect — and independence. Results will speak." },
-          { text:"Dismiss them outright", repDelta:-1, nextMission:"Defence", outcome:"You gain freedom — and make enemies in Azyr." }
+          { text:"Listen, then choose your own course", repDelta:+1, nextMission:"Incursion", outcome:"You show respect, and independence. Results will speak." },
+          { text:"Dismiss them outright", repDelta:-1, nextMission:"Defence", outcome:"You gain freedom, and make enemies in Azyr." }
         ]},
       { title:"Supply Wagons",
         prompt:"Your supply line is threatened by raids and sabotage.",
